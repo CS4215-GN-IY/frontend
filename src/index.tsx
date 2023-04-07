@@ -26,7 +26,8 @@ setModulesStaticURL(Constants.moduleBackendUrl);
 
 // Initialise the browser file system before rendering to avoid race conditions on the file system.
 createInBrowserFileSystem(store)
-  .then(() => {
+  .catch(err => console.error(err))
+  .finally(() => {
     render(
       <Provider store={store}>
         <Router history={history}>
@@ -35,8 +36,7 @@ createInBrowserFileSystem(store)
       </Provider>,
       rootContainer
     );
-  })
-  .catch(err => console.error(err));
+  });
 
 registerServiceWorker({
   onUpdate: () => {
