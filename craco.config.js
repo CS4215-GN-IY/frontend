@@ -40,6 +40,7 @@ const cracoConfig = (module.exports = {
       // Polyfill Node.js core modules.
       // An empty implementation (false) is provided when there is no browser equivalent.
       webpackConfig.resolve.fallback = {
+        'assert': require.resolve('assert/'),
         'child_process': false,
         'constants': require.resolve('constants-browserify'),
         'fs': false,
