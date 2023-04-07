@@ -15,7 +15,6 @@ import Playground from '../../pages/playground/PlaygroundContainer';
 import Sicp from '../../pages/sicp/Sicp';
 import Welcome from '../../pages/welcome/Welcome';
 import { AssessmentConfiguration } from '../assessment/AssessmentTypes';
-import NavigationBar from '../navigationBar/NavigationBar';
 import Constants from '../utils/Constants';
 import { useLocalStorageState } from '../utils/Hooks';
 import { defaultWorkspaceSettings, WorkspaceSettingsContext } from '../WorkspaceSettingsContext';
@@ -156,23 +155,6 @@ const Application: React.FC<ApplicationProps> = props => {
   return (
     <WorkspaceSettingsContext.Provider value={[workspaceSettings, setWorkspaceSettings]}>
       <div className="Application">
-        <NavigationBar
-          handleLogOut={props.handleLogOut}
-          handleGitHubLogIn={props.handleGitHubLogIn}
-          handleGitHubLogOut={props.handleGitHubLogOut}
-          handleCreateCourse={props.handleCreateCourse}
-          role={props.role}
-          name={props.name}
-          courses={props.courses}
-          courseId={props.courseId}
-          courseShortName={props.courseShortName}
-          enableAchievements={props.enableAchievements}
-          enableSourcecast={props.enableSourcecast}
-          assessmentTypes={React.useMemo(
-            () => props.assessmentConfigurations?.map(c => c.type),
-            [props.assessmentConfigurations]
-          )}
-        />
         <div className="Application__main">
           {isDisabledEffective && (
             <Switch>
