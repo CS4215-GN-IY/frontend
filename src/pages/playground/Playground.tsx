@@ -38,7 +38,6 @@ import {
   browseReplHistoryDown,
   browseReplHistoryUp,
   changeSideContentHeight,
-  changeStepLimit,
   evalEditor,
   navigateToDeclaration,
   promptAutocomplete,
@@ -85,7 +84,6 @@ import { ControlBarExecutionTime } from '../../commons/controlBar/ControlBarExec
 import { ControlBarGoogleDriveButtons } from '../../commons/controlBar/ControlBarGoogleDriveButtons';
 import { ControlBarSessionButtons } from '../../commons/controlBar/ControlBarSessionButton';
 import { ControlBarShareButton } from '../../commons/controlBar/ControlBarShareButton';
-import { ControlBarStepLimit } from '../../commons/controlBar/ControlBarStepLimit';
 import { ControlBarToggleFolderModeButton } from '../../commons/controlBar/ControlBarToggleFolderModeButton';
 import { ControlBarGitHubButtons } from '../../commons/controlBar/github/ControlBarGitHubButtons';
 import {
@@ -606,22 +604,6 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
     [props.execTime, props.handleChangeExecTime]
   );
 
-  const stepperStepLimit = React.useMemo(
-    () => (
-      <ControlBarStepLimit
-        stepLimit={props.stepLimit}
-        handleChangeStepLimit={limit => dispatch(changeStepLimit(limit, workspaceLocation))}
-        handleOnBlurAutoScale={limit => {
-          limit % 2 === 0
-            ? dispatch(changeStepLimit(limit, workspaceLocation))
-            : dispatch(changeStepLimit(limit + 1, workspaceLocation));
-        }}
-        key="step_limit"
-      />
-    ),
-    [dispatch, props.stepLimit, workspaceLocation]
-  );
-
   const getEditorValue = React.useCallback(
     // TODO: Hardcoded to make use of the first editor tab. Rewrite after editor tabs are added.
     () => store.getState().workspaces[workspaceLocation].editorTabs[0].value,
@@ -905,16 +887,7 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
         autorunButtons,
         props.playgroundSourceChapter === Chapter.FULL_JS ? null : shareButton,
         chapterSelect,
-        isSicpEditor ? null : sessionButtons,
-        // Local imports/exports require Source 2+ as Source 1 does not have lists.
-        props.playgroundSourceChapter === Chapter.SOURCE_1 ? null : toggleFolderModeButton,
-        persistenceButtons,
-        githubButtons,
-        usingRemoteExecution || !isSourceLanguage(props.playgroundSourceChapter)
-          ? null
-          : props.usingSubst
-          ? stepperStepLimit
-          : executionTime
+        executionTime
       ]
     },
     editorContainerProps: editorContainerProps,
