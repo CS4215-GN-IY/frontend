@@ -173,7 +173,8 @@ const Application: React.FC<ApplicationProps> = props => {
           )}
           {!isDisabledEffective && Constants.playgroundOnly && (
             <Switch>
-              <Route component={Playground} />
+              <Route path="/" exact={true} component={Playground} />
+              <Redirect path="*" to="/" />
             </Switch>
           )}
           {!isDisabledEffective && !Constants.playgroundOnly && (
