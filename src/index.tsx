@@ -23,7 +23,6 @@ console.log(
 );
 
 setModulesStaticURL(Constants.moduleBackendUrl);
-console.log(`Using module backend: ${Constants.moduleBackendUrl}`);
 
 // Initialise the browser file system before rendering to avoid race conditions on the file system.
 createInBrowserFileSystem(store)
