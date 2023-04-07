@@ -55,7 +55,7 @@ jobs:
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
-        external_repository: CS4215-GN-IY/playground
+        external_repository: CS4215-GN-IY/cs4215-gn-iy.github.io
         deploy_key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
         publish_dir: ./build
         publish_branch: master
