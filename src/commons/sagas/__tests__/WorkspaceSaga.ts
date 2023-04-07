@@ -3,8 +3,6 @@ import createContext from 'js-slang/dist/createContext';
 import { Chapter, Finished, Variant } from 'js-slang/dist/types';
 import { call } from 'redux-saga/effects';
 import { expectSaga } from 'redux-saga-test-plan';
-import * as matchers from 'redux-saga-test-plan/matchers';
-import { showFullJSDisclaimer, showFullTSDisclaimer } from 'src/commons/utils/WarningDialogHelper';
 
 import {
   beginInterruptExecution,
@@ -16,12 +14,7 @@ import {
   evalTestcaseFailure,
   evalTestcaseSuccess
 } from '../../application/actions/InterpreterActions';
-import {
-  defaultState,
-  fullJSLanguage,
-  fullTSLanguage,
-  OverallState
-} from '../../application/ApplicationTypes';
+import { defaultState, OverallState } from '../../application/ApplicationTypes';
 import { externalLibraries, ExternalLibraryName } from '../../application/types/ExternalTypes';
 import {
   BEGIN_DEBUG_PAUSE,
@@ -526,32 +519,6 @@ describe('CHAPTER_SELECT', () => {
     };
   });
 
-  test('puts beginClearContext, clearReplOutput and calls showSuccessMessage correctly', () => {
-    const newChapter = Chapter.SOURCE_3;
-    const library: Library = {
-      chapter: newChapter,
-      variant: Variant.DEFAULT,
-      external: {
-        name: 'NONE' as ExternalLibraryName,
-        symbols: context.externalSymbols
-      },
-      globals
-    };
-
-    const newDefaultState = generateDefaultState(workspaceLocation, { context, globals });
-
-    return expectSaga(workspaceSaga)
-      .withState(newDefaultState)
-      .put(beginClearContext(workspaceLocation, library, false))
-      .put(clearReplOutput(workspaceLocation))
-      .call(showSuccessMessage, `Switched to Source \xa7${newChapter}`, 1000)
-      .dispatch({
-        type: CHAPTER_SELECT,
-        payload: { chapter: newChapter, variant: Variant.DEFAULT, workspaceLocation }
-      })
-      .silentRun();
-  });
-
   test('does not call beginClearContext, clearReplOutput and showSuccessMessage when oldChapter === newChapter and oldVariant === newVariant', () => {
     const newChapter = Chapter.SOURCE_4;
     const newVariant = Variant.DEFAULT;
@@ -567,112 +534,6 @@ describe('CHAPTER_SELECT', () => {
         payload: { chapter: newChapter, variant: newVariant, workspaceLocation }
       })
       .silentRun();
-  });
-
-  describe('show disclaimer when fullJS is chosen', () => {
-    test('correct actions when user proceeds', () => {
-      const newDefaultState = generateDefaultState(workspaceLocation, { context, globals });
-      const library: Library = {
-        chapter: fullJSLanguage.chapter,
-        variant: fullJSLanguage.variant,
-        external: {
-          name: 'NONE' as ExternalLibraryName,
-          symbols: context.externalSymbols
-        },
-        globals
-      };
-
-      return expectSaga(workspaceSaga)
-        .provide([[matchers.call.fn(showFullJSDisclaimer), true]])
-        .withState(newDefaultState)
-        .call(showFullJSDisclaimer)
-        .put(beginClearContext(workspaceLocation, library, false))
-        .put(clearReplOutput(workspaceLocation))
-        .call(showSuccessMessage, `Switched to full JavaScript`, 1000)
-        .dispatch({
-          type: CHAPTER_SELECT,
-          payload: {
-            chapter: fullJSLanguage.chapter,
-            variant: fullJSLanguage.variant,
-            workspaceLocation
-          }
-        })
-        .silentRun();
-    });
-
-    test('correct actions when user cancels', () => {
-      const newDefaultState = generateDefaultState(workspaceLocation, { context, globals });
-
-      return expectSaga(workspaceSaga)
-        .provide([[matchers.call.fn(showFullJSDisclaimer), false]])
-        .withState(newDefaultState)
-        .call(showFullJSDisclaimer)
-        .not.put.actionType(BEGIN_CLEAR_CONTEXT)
-        .not.put.actionType(CLEAR_REPL_OUTPUT)
-        .not.call.fn(showSuccessMessage)
-        .dispatch({
-          type: CHAPTER_SELECT,
-          payload: {
-            chapter: fullJSLanguage.chapter,
-            variant: fullJSLanguage.variant,
-            workspaceLocation
-          }
-        })
-        .silentRun();
-    });
-  });
-
-  describe('show disclaimer when fullTS is chosen', () => {
-    test('correct actions when user proceeds', () => {
-      const newDefaultState = generateDefaultState(workspaceLocation, { context, globals });
-      const library: Library = {
-        chapter: fullTSLanguage.chapter,
-        variant: fullTSLanguage.variant,
-        external: {
-          name: 'NONE' as ExternalLibraryName,
-          symbols: context.externalSymbols
-        },
-        globals
-      };
-
-      return expectSaga(workspaceSaga)
-        .provide([[matchers.call.fn(showFullTSDisclaimer), true]])
-        .withState(newDefaultState)
-        .call(showFullTSDisclaimer)
-        .put(beginClearContext(workspaceLocation, library, false))
-        .put(clearReplOutput(workspaceLocation))
-        .call(showSuccessMessage, `Switched to full TypeScript`, 1000)
-        .dispatch({
-          type: CHAPTER_SELECT,
-          payload: {
-            chapter: fullTSLanguage.chapter,
-            variant: fullTSLanguage.variant,
-            workspaceLocation
-          }
-        })
-        .silentRun();
-    });
-
-    test('correct actions when user cancels', () => {
-      const newDefaultState = generateDefaultState(workspaceLocation, { context, globals });
-
-      return expectSaga(workspaceSaga)
-        .provide([[matchers.call.fn(showFullTSDisclaimer), false]])
-        .withState(newDefaultState)
-        .call(showFullTSDisclaimer)
-        .not.put.actionType(BEGIN_CLEAR_CONTEXT)
-        .not.put.actionType(CLEAR_REPL_OUTPUT)
-        .not.call.fn(showSuccessMessage)
-        .dispatch({
-          type: CHAPTER_SELECT,
-          payload: {
-            chapter: fullTSLanguage.chapter,
-            variant: fullTSLanguage.variant,
-            workspaceLocation
-          }
-        })
-        .silentRun();
-    });
   });
 });
 

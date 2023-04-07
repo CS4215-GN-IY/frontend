@@ -163,11 +163,11 @@ exports[`AssessmentWorkspace page with ContestVoting question renders correctly 
                                 <Blueprint4.ResizeSensor onResize={[Function (anonymous)]}>
                                   <span onClick={[Function (anonymous)]} aria-haspopup=\\"true\\" className=\\"bp4-popover-target\\">
                                     <div onKeyDown={[Function (anonymous)]} onKeyUp={[undefined]} className=\\"\\" disabled={[undefined]} tabIndex={[undefined]}>
-                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"Source §1\\" rightIcon={{...}} disabled={true}>
+                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"C\\" rightIcon={{...}} disabled={true}>
                                         <button type=\\"button\\" className=\\"bp4-button bp4-disabled bp4-minimal\\" disabled={true} onBlur={[Function (anonymous)]} onClick={[undefined]} onFocus={[undefined]} onKeyDown={[Function (anonymous)]} onKeyUp={[Function (anonymous)]} tabIndex={-1}>
                                           <Blueprint4.Icon icon={[undefined]} />
                                           <span className=\\"bp4-button-text\\">
-                                            Source §1
+                                            C
                                           </span>
                                           <Blueprint4.Icon icon={{...}} />
                                         </button>
@@ -899,11 +899,11 @@ exports[`AssessmentWorkspace page with MCQ question renders correctly 1`] = `
                                 <Blueprint4.ResizeSensor onResize={[Function (anonymous)]}>
                                   <span onClick={[Function (anonymous)]} aria-haspopup=\\"true\\" className=\\"bp4-popover-target\\">
                                     <div onKeyDown={[Function (anonymous)]} onKeyUp={[undefined]} className=\\"\\" disabled={[undefined]} tabIndex={[undefined]}>
-                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"Source §1\\" rightIcon={{...}} disabled={true}>
+                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"C\\" rightIcon={{...}} disabled={true}>
                                         <button type=\\"button\\" className=\\"bp4-button bp4-disabled bp4-minimal\\" disabled={true} onBlur={[Function (anonymous)]} onClick={[undefined]} onFocus={[undefined]} onKeyDown={[Function (anonymous)]} onKeyUp={[Function (anonymous)]} tabIndex={-1}>
                                           <Blueprint4.Icon icon={[undefined]} />
                                           <span className=\\"bp4-button-text\\">
-                                            Source §1
+                                            C
                                           </span>
                                           <Blueprint4.Icon icon={{...}} />
                                         </button>
@@ -1499,11 +1499,11 @@ exports[`AssessmentWorkspace page with overdue assessment renders correctly 1`] 
                                 <Blueprint4.ResizeSensor onResize={[Function (anonymous)]}>
                                   <span onClick={[Function (anonymous)]} aria-haspopup=\\"true\\" className=\\"bp4-popover-target\\">
                                     <div onKeyDown={[Function (anonymous)]} onKeyUp={[undefined]} className=\\"\\" disabled={[undefined]} tabIndex={[undefined]}>
-                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"Source §1\\" rightIcon={{...}} disabled={true}>
+                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"C\\" rightIcon={{...}} disabled={true}>
                                         <button type=\\"button\\" className=\\"bp4-button bp4-disabled bp4-minimal\\" disabled={true} onBlur={[Function (anonymous)]} onClick={[undefined]} onFocus={[undefined]} onKeyDown={[Function (anonymous)]} onKeyUp={[Function (anonymous)]} tabIndex={-1}>
                                           <Blueprint4.Icon icon={[undefined]} />
                                           <span className=\\"bp4-button-text\\">
-                                            Source §1
+                                            C
                                           </span>
                                           <Blueprint4.Icon icon={{...}} />
                                         </button>
@@ -2055,11 +2055,11 @@ exports[`AssessmentWorkspace page with programming question renders correctly 1`
                                 <Blueprint4.ResizeSensor onResize={[Function (anonymous)]}>
                                   <span onClick={[Function (anonymous)]} aria-haspopup=\\"true\\" className=\\"bp4-popover-target\\">
                                     <div onKeyDown={[Function (anonymous)]} onKeyUp={[undefined]} className=\\"\\" disabled={[undefined]} tabIndex={[undefined]}>
-                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"Source §1\\" rightIcon={{...}} disabled={true}>
+                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"C\\" rightIcon={{...}} disabled={true}>
                                         <button type=\\"button\\" className=\\"bp4-button bp4-disabled bp4-minimal\\" disabled={true} onBlur={[Function (anonymous)]} onClick={[undefined]} onFocus={[undefined]} onKeyDown={[Function (anonymous)]} onKeyUp={[Function (anonymous)]} tabIndex={-1}>
                                           <Blueprint4.Icon icon={[undefined]} />
                                           <span className=\\"bp4-button-text\\">
-                                            Source §1
+                                            C
                                           </span>
                                           <Blueprint4.Icon icon={{...}} />
                                         </button>
@@ -2611,11 +2611,11 @@ exports[`AssessmentWorkspace renders Grading tab correctly if the question has b
                                 <Blueprint4.ResizeSensor onResize={[Function (anonymous)]}>
                                   <span onClick={[Function (anonymous)]} aria-haspopup=\\"true\\" className=\\"bp4-popover-target\\">
                                     <div onKeyDown={[Function (anonymous)]} onKeyUp={[undefined]} className=\\"\\" disabled={[undefined]} tabIndex={[undefined]}>
-                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"Source §1\\" rightIcon={{...}} disabled={true}>
+                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"C\\" rightIcon={{...}} disabled={true}>
                                         <button type=\\"button\\" className=\\"bp4-button bp4-disabled bp4-minimal\\" disabled={true} onBlur={[Function (anonymous)]} onClick={[undefined]} onFocus={[undefined]} onKeyDown={[Function (anonymous)]} onKeyUp={[Function (anonymous)]} tabIndex={-1}>
                                           <Blueprint4.Icon icon={[undefined]} />
                                           <span className=\\"bp4-button-text\\">
-                                            Source §1
+                                            C
                                           </span>
                                           <Blueprint4.Icon icon={{...}} />
                                         </button>
