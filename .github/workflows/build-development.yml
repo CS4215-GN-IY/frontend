@@ -14,9 +14,6 @@ jobs:
       uses: actions/setup-node@v2-beta
       with:
         node-version: '16'
-    - name: Setup Sentry CLI
-      run: |
-        curl -sL https://sentry.io/get-cli/ | INSTALL_DIR=. bash
     - name: Get yarn cache directory path
       id: yarn-cache-dir-path
       run: echo "::set-output name=dir::$(yarn cache dir)"
@@ -43,7 +40,6 @@ jobs:
       env:
         REACT_APP_URL_SHORTENER_SIGNATURE: ${{ secrets.REACT_APP_URL_SHORTENER_SIGNATURE }}
         REACT_APP_URL_SHORTENER_BASE: ${{ secrets.REACT_APP_URL_SHORTENER_BASE }}
-        REACT_APP_SENTRY_DSN: ${{ secrets.REACT_APP_SENTRY_DSN }}
         REACT_APP_GOOGLE_CLIENT_ID: ${{ secrets.REACT_APP_GOOGLE_CLIENT_ID }}
         REACT_APP_GOOGLE_API_KEY: ${{ secrets.REACT_APP_GOOGLE_API_KEY }}
         REACT_APP_GOOGLE_APP_ID: ${{ secrets.REACT_APP_GOOGLE_APP_ID }}
@@ -56,20 +52,6 @@ jobs:
         PUBLIC_URL: "https://sourceacademy.org"
         REACT_APP_GITHUB_OAUTH_PROXY_URL: ${{ secrets.REACT_APP_GITHUB_OAUTH_PROXY_URL }}
         REACT_APP_GITHUB_CLIENT_ID: ${{ secrets.REACT_APP_GITHUB_CLIENT_ID }}
-    - name: Create Sentry release
-      working-directory: build
-      run: |
-        SENTRY_RELEASE="cadet-frontend@$REACT_APP_VERSION"
-        "$GITHUB_WORKSPACE/sentry-cli" releases new -p "$SENTRY_PROJECT" "$SENTRY_RELEASE"
-        "$GITHUB_WORKSPACE/sentry-cli" releases set-commits --auto "$SENTRY_RELEASE"
-        "$GITHUB_WORKSPACE/sentry-cli" releases files "$SENTRY_RELEASE" upload-sourcemaps --url-prefix '~/static/js' --rewrite static/js
-        "$GITHUB_WORKSPACE/sentry-cli" releases finalize "$SENTRY_RELEASE"
-        "$GITHUB_WORKSPACE/sentry-cli" releases deploys "$SENTRY_RELEASE" new -e pages
-      env:
-        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        SENTRY_ORG: sourceacademy
-        SENTRY_PROJECT: cadet-frontend
-        REACT_APP_VERSION: ${{ format('{0}-{1}', github.sha, steps.get-time.outputs.time) }}
     - name: Remove sourcemaps
       working-directory: build
       run: |
