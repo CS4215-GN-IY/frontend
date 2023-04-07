@@ -4,7 +4,6 @@ import { Octokit } from '@octokit/rest';
 import { Ace, Range } from 'ace-builds';
 import { FSModule } from 'browserfs/dist/node/core/FS';
 import classNames from 'classnames';
-import { isStepperOutput } from 'js-slang/dist/stepper/stepper';
 import { Chapter, Variant } from 'js-slang/dist/types';
 import _, { isEqual } from 'lodash';
 import { decompressFromEncodedURIComponent } from 'lz-string';
@@ -28,7 +27,6 @@ import {
   setEditorSessionId,
   setSharedbConnected
 } from 'src/commons/collabEditing/CollabEditingActions';
-import SideContentHtmlDisplay from 'src/commons/sideContent/SideContentHtmlDisplay';
 import { useResponsive, useTypedSelector } from 'src/commons/utils/Hooks';
 import {
   showFullJSWarningOnUrlLoad,
@@ -37,7 +35,6 @@ import {
 } from 'src/commons/utils/WarningDialogHelper';
 import {
   addEditorTab,
-  addHtmlConsoleError,
   browseReplHistoryDown,
   browseReplHistoryUp,
   changeSideContentHeight,
@@ -77,7 +74,6 @@ import {
   InterpreterOutput,
   isSourceLanguage,
   OverallState,
-  ResultOutput,
   sourceLanguages
 } from '../../commons/application/ApplicationTypes';
 import { ExternalLibraryName } from '../../commons/application/types/ExternalTypes';
@@ -105,9 +101,6 @@ import MobileWorkspace, {
 } from '../../commons/mobileWorkspace/MobileWorkspace';
 import { SideBarTab } from '../../commons/sideBar/SideBar';
 import SideContentRemoteExecution from '../../commons/sideContent/remoteExecution/SideContentRemoteExecution';
-import SideContentDataVisualizer from '../../commons/sideContent/SideContentDataVisualizer';
-import SideContentEnvVisualizer from '../../commons/sideContent/SideContentEnvVisualizer';
-import SideContentSubstVisualizer from '../../commons/sideContent/SideContentSubstVisualizer';
 import { SideContentTab, SideContentType } from '../../commons/sideContent/SideContentTypes';
 import { Links } from '../../commons/utils/Constants';
 import { generateSourceIntroduction } from '../../commons/utils/IntroductionHelper';
@@ -298,8 +291,7 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
       chapter: propsRef.current.playgroundSourceChapter
     })
   );
-
-  const remoteExecutionTab: SideContentTab = React.useMemo(
+  React.useMemo(
     () => ({
       label: 'Remote Execution',
       iconName: IconNames.SATELLITE,
@@ -417,21 +409,6 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
     },
     [hasBreakpoints]
   );
-
-  const processStepperOutput = (output: InterpreterOutput[]) => {
-    const editorOutput = output[0];
-    if (
-      editorOutput &&
-      editorOutput.type === 'result' &&
-      editorOutput.value instanceof Array &&
-      editorOutput.value[0] === Object(editorOutput.value[0]) &&
-      isStepperOutput(editorOutput.value[0])
-    ) {
-      return editorOutput.value;
-    } else {
-      return [];
-    }
-  };
 
   const pushLog = React.useCallback(
     (newInput: Input) => {
@@ -728,79 +705,8 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
 
   const tabs = React.useMemo(() => {
     const tabs: SideContentTab[] = [playgroundIntroductionTab];
-
-    // For HTML Chapter, HTML Display tab is added only after code is run
-    if (props.playgroundSourceChapter === Chapter.HTML) {
-      if (props.output.length > 0 && props.output[0].type === 'result') {
-        tabs.push({
-          label: 'HTML Display',
-          iconName: IconNames.MODAL,
-          body: (
-            <SideContentHtmlDisplay
-              content={(props.output[0] as ResultOutput).value}
-              handleAddHtmlConsoleError={errorMsg =>
-                dispatch(addHtmlConsoleError(errorMsg, workspaceLocation))
-              }
-            />
-          ),
-          id: SideContentType.htmlDisplay
-        });
-      }
-      return tabs;
-    }
-
-    // (TEMP) Remove tabs for fullJS until support is integrated
-    if (
-      props.playgroundSourceChapter === Chapter.FULL_JS ||
-      props.playgroundSourceChapter === Chapter.FULL_TS
-    ) {
-      return [...tabs, dataVisualizerTab];
-    }
-
-    if (props.playgroundSourceChapter >= 2 && !usingRemoteExecution) {
-      // Enable Data Visualizer for Source Chapter 2 and above
-      tabs.push(dataVisualizerTab);
-    }
-    if (
-      props.playgroundSourceChapter >= 3 &&
-      props.playgroundSourceVariant !== Variant.CONCURRENT &&
-      props.playgroundSourceVariant !== Variant.NON_DET &&
-      !usingRemoteExecution
-    ) {
-      // Enable Env Visualizer for Source Chapter 3 and above
-      tabs.push(envVisualizerTab);
-    }
-
-    if (
-      props.playgroundSourceChapter <= 2 &&
-      (props.playgroundSourceVariant === Variant.DEFAULT ||
-        props.playgroundSourceVariant === Variant.NATIVE)
-    ) {
-      // Enable Subst Visualizer only for default Source 1 & 2
-      tabs.push({
-        label: 'Stepper',
-        iconName: IconNames.FLOW_REVIEW,
-        body: <SideContentSubstVisualizer content={processStepperOutput(props.output)} />,
-        id: SideContentType.substVisualizer
-      });
-    }
-
-    if (!isSicpEditor) {
-      tabs.push(remoteExecutionTab);
-    }
-
     return tabs;
-  }, [
-    playgroundIntroductionTab,
-    props.playgroundSourceChapter,
-    props.playgroundSourceVariant,
-    props.output,
-    usingRemoteExecution,
-    isSicpEditor,
-    dispatch,
-    workspaceLocation,
-    remoteExecutionTab
-  ]);
+  }, [playgroundIntroductionTab]);
 
   // Remove Intro and Remote Execution tabs for mobile
   const mobileTabs = [...tabs].filter(({ id }) => !(id && desktopOnlyTabIds.includes(id)));
@@ -1079,19 +985,4 @@ const mobileOnlyTabIds: readonly SideContentType[] = [
   SideContentType.mobileEditorRun
 ];
 const desktopOnlyTabIds: readonly SideContentType[] = [SideContentType.introduction];
-
-const dataVisualizerTab: SideContentTab = {
-  label: 'Data Visualizer',
-  iconName: IconNames.EYE_OPEN,
-  body: <SideContentDataVisualizer />,
-  id: SideContentType.dataVisualizer
-};
-
-const envVisualizerTab: SideContentTab = {
-  label: 'Env Visualizer',
-  iconName: IconNames.GLOBE,
-  body: <SideContentEnvVisualizer />,
-  id: SideContentType.envVisualizer
-};
-
 export default Playground;
