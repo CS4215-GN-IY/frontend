@@ -987,9 +987,7 @@ export const WorkspaceReducer: Reducer<WorkspaceManagerState> = (
           debuggerContext: {
             ...state[workspaceLocation].debuggerContext,
             result: action.payload.result,
-            lastDebuggerResult: action.payload.lastDebuggerResult,
             code: action.payload.code,
-            context: action.payload.context,
             workspaceLocation: action.payload.workspaceLocation
           }
         }

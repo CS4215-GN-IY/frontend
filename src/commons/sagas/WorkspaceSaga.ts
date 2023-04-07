@@ -1,52 +1,32 @@
 import { FSModule } from 'browserfs/dist/node/core/FS';
-import {
-  Context,
-  findDeclaration,
-  getNames,
-  interrupt,
-  parseError,
-  Result,
-  resume,
-  runFilesInContext,
-  runInContext
-} from 'js-slang';
-import { TRY_AGAIN } from 'js-slang/dist/constants';
+import { run } from 'c-slang';
+import { Context, findDeclaration, getNames, interrupt, runInContext } from 'js-slang';
 import { defineSymbol } from 'js-slang/dist/createContext';
 import { InterruptedError } from 'js-slang/dist/errors/errors';
-import { parse } from 'js-slang/dist/parser/parser';
-import { manualToggleDebugger } from 'js-slang/dist/stdlib/inspector';
-import { typeCheck } from 'js-slang/dist/typeChecker/typeChecker';
 import { Chapter, Variant } from 'js-slang/dist/types';
-import { validateAndAnnotate } from 'js-slang/dist/validator/validator';
-import { random } from 'lodash';
 import Phaser from 'phaser';
 import { SagaIterator } from 'redux-saga';
 import { call, put, race, select, StrictEffect, take } from 'redux-saga/effects';
-import * as Sourceror from 'sourceror';
 import EnvVisualizer from 'src/features/envVisualizer/EnvVisualizer';
 
 import { EventType } from '../../features/achievement/AchievementTypes';
 import DataVisualizer from '../../features/dataVisualizer/dataVisualizer';
-import { DeviceSession } from '../../features/remoteExecution/RemoteExecutionTypes';
 import { WORKSPACE_BASE_PATHS } from '../../pages/fileSystem/createInBrowserFileSystem';
 import {
   defaultEditorValue,
-  isSourceLanguage,
   OverallState,
   styliseSublanguage
 } from '../application/ApplicationTypes';
 import { externalLibraries, ExternalLibraryName } from '../application/types/ExternalTypes';
 import {
-  BEGIN_DEBUG_PAUSE,
   BEGIN_INTERRUPT_EXECUTION,
   DEBUG_RESET,
   DEBUG_RESUME,
   UPDATE_EDITOR_HIGHLIGHTED_LINES
 } from '../application/types/InterpreterTypes';
-import { Library, Testcase, TestcaseType, TestcaseTypes } from '../assessment/AssessmentTypes';
+import { Library, TestcaseType, TestcaseTypes } from '../assessment/AssessmentTypes';
 import { Documentation } from '../documentation/Documentation';
-import { retrieveFilesInWorkspaceAsRecord, writeFileRecursively } from '../fileSystem/utils';
-import { SideContentType } from '../sideContent/SideContentTypes';
+import { writeFileRecursively } from '../fileSystem/utils';
 import { actions } from '../utils/ActionsHelper';
 import DisplayBufferService from '../utils/DisplayBufferService';
 import {
@@ -55,12 +35,9 @@ import {
   getRestoreExtraMethodsString,
   getStoreExtraMethodsString,
   highlightClean,
-  highlightLine,
-  makeElevatedContext,
-  visualizeEnv
+  highlightLine
 } from '../utils/JsSlangHelper';
 import { showSuccessMessage, showWarningMessage } from '../utils/NotificationsHelper';
-import { makeExternalBuiltins as makeSourcerorExternalBuiltins } from '../utils/SourcerorHelper';
 import { showFullJSDisclaimer, showFullTSDisclaimer } from '../utils/WarningDialogHelper';
 import { notifyProgramEvaluated } from '../workspace/WorkspaceActions';
 import {
@@ -70,22 +47,18 @@ import {
   EditorTabState,
   END_CLEAR_CONTEXT,
   EVAL_EDITOR,
-  EVAL_EDITOR_AND_TESTCASES,
   EVAL_REPL,
   EVAL_SILENT,
-  EVAL_TESTCASE,
   NAV_DECLARATION,
   PLAYGROUND_EXTERNAL_SELECT,
-  PlaygroundWorkspaceState,
   PROMPT_AUTOCOMPLETE,
   SET_FOLDER_MODE,
-  SicpWorkspaceState,
   TOGGLE_EDITOR_AUTORUN,
   TOGGLE_FOLDER_MODE,
   UPDATE_EDITOR_VALUE,
   WorkspaceLocation
 } from '../workspace/WorkspaceTypes';
-import { safeTakeEvery as takeEvery, safeTakeLeading as takeLeading } from './SafeEffects';
+import { safeTakeEvery as takeEvery } from './SafeEffects';
 
 export default function* WorkspaceSaga(): SagaIterator {
   let context: Context;
@@ -292,12 +265,7 @@ export default function* WorkspaceSaga(): SagaIterator {
     yield put(actions.beginInterruptExecution(workspaceLocation));
     yield put(actions.clearReplInput(workspaceLocation));
     yield put(actions.sendReplInputToOutput(code, workspaceLocation));
-    context = yield select((state: OverallState) => state.workspaces[workspaceLocation].context);
-    const codeFilePath = '/code.js';
-    const codeFiles = {
-      [codeFilePath]: code
-    };
-    yield call(evalCode, codeFiles, codeFilePath, context, execTime, workspaceLocation, EVAL_REPL);
+    yield call(evalCode, code, execTime, workspaceLocation, EVAL_REPL);
   });
 
   yield takeEvery(DEBUG_RESUME, function* (action: ReturnType<typeof actions.debuggerResume>) {
@@ -312,22 +280,9 @@ export default function* WorkspaceSaga(): SagaIterator {
     yield put(actions.beginInterruptExecution(workspaceLocation));
     /** Clear the context, with the same chapter and externalSymbols as before. */
     yield put(actions.clearReplOutput(workspaceLocation));
-    context = yield select((state: OverallState) => state.workspaces[workspaceLocation].context);
     // TODO: Hardcoded to make use of the first editor tab. Rewrite after editor tabs are added.
     yield put(actions.setEditorHighlightedLines(workspaceLocation, 0, []));
-    const codeFilePath = '/code.js';
-    const codeFiles = {
-      [codeFilePath]: code
-    };
-    yield call(
-      evalCode,
-      codeFiles,
-      codeFilePath,
-      context,
-      execTime,
-      workspaceLocation,
-      DEBUG_RESUME
-    );
+    yield call(evalCode, code, execTime, workspaceLocation, DEBUG_RESUME);
   });
 
   yield takeEvery(DEBUG_RESET, function* (action: ReturnType<typeof actions.debuggerReset>) {
@@ -337,7 +292,6 @@ export default function* WorkspaceSaga(): SagaIterator {
     // TODO: Hardcoded to make use of the first editor tab. Rewrite after editor tabs are added.
     yield put(actions.setEditorHighlightedLines(workspaceLocation, 0, []));
     context.runtime.break = false;
-    lastDebuggerResult = undefined;
   });
 
   yield takeEvery(
@@ -354,13 +308,6 @@ export default function* WorkspaceSaga(): SagaIterator {
       yield;
     }
   );
-
-  yield takeEvery(EVAL_TESTCASE, function* (action: ReturnType<typeof actions.evalTestcase>) {
-    yield put(actions.addEvent([EventType.RUN_TESTCASE]));
-    const workspaceLocation = action.payload.workspaceLocation;
-    const index = action.payload.testcaseId;
-    yield* runTestCase(workspaceLocation, index);
-  });
 
   yield takeEvery(CHAPTER_SELECT, function* (action: ReturnType<typeof actions.chapterSelect>) {
     const { workspaceLocation, chapter: newChapter, variant: newVariant } = action.payload;
@@ -507,53 +454,6 @@ export default function* WorkspaceSaga(): SagaIterator {
       }
     }
   );
-
-  yield takeLeading(
-    EVAL_EDITOR_AND_TESTCASES,
-    function* (action: ReturnType<typeof actions.runAllTestcases>) {
-      const { workspaceLocation } = action.payload;
-
-      yield call(evalEditor, workspaceLocation);
-
-      const testcases: Testcase[] = yield select(
-        (state: OverallState) => state.workspaces[workspaceLocation].editorTestcases
-      );
-      // Avoid displaying message if there are no testcases
-      if (testcases.length > 0) {
-        // Display a message to the user
-        yield call(showSuccessMessage, `Running all testcases!`, 2000);
-        for (const idx of testcases.keys()) {
-          // break each testcase up into separate event loop iterations
-          // so that the UI updates
-          yield new Promise(resolve => setTimeout(resolve, 0));
-
-          const programSucceeded: boolean = yield call(runTestCase, workspaceLocation, idx);
-          // Prematurely terminate if execution of the program failed (not the testcase)
-          if (!programSucceeded) {
-            return;
-          }
-        }
-      }
-    }
-  );
-}
-
-let lastDebuggerResult: any;
-let lastNonDetResult: Result;
-function* updateInspector(workspaceLocation: WorkspaceLocation): SagaIterator {
-  try {
-    const start = lastDebuggerResult.context.runtime.nodes[0].loc.start.line - 1;
-    const end = lastDebuggerResult.context.runtime.nodes[0].loc.end.line - 1;
-    // TODO: Hardcoded to make use of the first editor tab. Rewrite after editor tabs are added.
-    yield put(actions.setEditorHighlightedLines(workspaceLocation, 0, [[start, end]]));
-    visualizeEnv(lastDebuggerResult);
-  } catch (e) {
-    // TODO: Hardcoded to make use of the first editor tab. Rewrite after editor tabs are added.
-    yield put(actions.setEditorHighlightedLines(workspaceLocation, 0, []));
-    // most likely harmless, we can pretty much ignore this.
-    // half of the time this comes from execution ending or a stack overflow and
-    // the context goes missing.
-  }
 }
 
 function* clearContext(workspaceLocation: WorkspaceLocation, entrypointCode: string) {
@@ -598,305 +498,22 @@ export function* dumpDisplayBuffer(
   yield put(actions.handleConsoleLog(workspaceLocation, ...DisplayBufferService.dump()));
 }
 
-/**
- * Inserts debugger statements into the code based off the breakpoints set by the user.
- *
- * For every breakpoint, a corresponding `debugger;` statement is inserted at the start
- * of the line that the breakpoint is placed at. The `debugger;` statement is available
- * in both JavaScript and Source, and invokes any available debugging functionality.
- * See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/debugger
- * for more information.
- *
- * While it is typically the case that statements are contained within a single line,
- * this is not necessarily true. For example, the code `const x = 3;` can be rewritten as:
- * ```
- * const x
- * = 3;
- * ```
- * A breakpoint on the line `= 3;` would thus result in a `debugger;` statement being
- * added in the middle of another statement. The resulting code would then be syntactically
- * invalid.
- *
- * To work around this issue, we parse the code to check for syntax errors whenever we
- * add a `debugger;` statement. If the addition of a `debugger;` statement results in
- * invalid code, an error message is outputted with the line number of the offending
- * breakpoint.
- *
- * @param workspaceLocation The location of the current workspace.
- * @param code              The code which debugger statements should be inserted into.
- * @param breakpoints       The breakpoints corresponding to the code.
- * @param context           The context in which the code should be evaluated in.
- */
-function* insertDebuggerStatements(
-  workspaceLocation: WorkspaceLocation,
-  code: string,
-  breakpoints: string[],
-  context: Context
-): Generator<StrictEffect, string, any> {
-  // Check for initial syntax errors.
-  if (isSourceLanguage(context.chapter)) {
-    parse(code, context);
-  }
-
-  // If there are syntax errors, we do not insert the debugger statements.
-  // Instead, we let the code be evaluated so that the error messages are printed.
-  if (context.errors.length > 0) {
-    context.errors = [];
-    return code;
-  }
-
-  // Otherwise, we step through the breakpoints one by one & try to insert
-  // corresponding debugger statements.
-  const lines = code.split('\n');
-  let transformedCode = code;
-  for (let i = 0; i < breakpoints.length; i++) {
-    if (!breakpoints[i]) continue;
-    lines[i] = 'debugger;' + lines[i];
-    // Reconstruct the code & check that the code is still syntactically valid.
-    // The insertion of the debugger statement is potentially invalid if it
-    // happens within an existing statement (that is split across lines).
-    transformedCode = lines.join('\n');
-    if (isSourceLanguage(context.chapter)) {
-      parse(transformedCode, context);
-    }
-    // If the resulting code is no longer syntactically valid, throw an error.
-    if (context.errors.length > 0) {
-      const errorMessage = `Hint: Misplaced breakpoint at line ${i + 1}.`;
-      yield put(actions.sendReplInputToOutput(errorMessage, workspaceLocation));
-      return code;
-    }
-  }
-
-  /*
-  Not sure how this works, but there were some issues with breakpoints
-  I'm not sure why `in` is being used here, given that it's usually not
-  the intended effect
-
-  for (const breakpoint in breakpoints) {
-    // Add a debugger statement to the line with the breakpoint.
-    const breakpointLineNum: number = parseInt(breakpoint);
-    lines[breakpointLineNum] = 'debugger;' + lines[breakpointLineNum];
-    // Reconstruct the code & check that the code is still syntactically valid.
-    // The insertion of the debugger statement is potentially invalid if it
-    // happens within an existing statement (that is split across lines).
-    transformedCode = lines.join('\n');
-    if (isSourceLanguage(context.chapter)) {
-      parse(transformedCode, context);
-    }
-    // If the resulting code is no longer syntactically valid, throw an error.
-    if (context.errors.length > 0) {
-      const errorMessage = `Hint: Misplaced breakpoint at line ${breakpointLineNum + 1}.`;
-      yield put(actions.sendReplInputToOutput(errorMessage, workspaceLocation));
-      return code;
-    }
-  }
-  */
-
-  // Finally, return the transformed code with debugger statements added.
-  return transformedCode;
-}
-
 export function* evalEditor(
   workspaceLocation: WorkspaceLocation
 ): Generator<StrictEffect, void, any> {
-  const [
-    prepend,
-    activeEditorTabIndex,
-    editorTabs,
-    execTime,
-    isFolderModeEnabled,
-    fileSystem,
-    remoteExecutionSession
-  ]: [
-    string,
-    number | null,
-    EditorTabState[],
-    number,
-    boolean,
-    FSModule,
-    DeviceSession | undefined
-  ] = yield select((state: OverallState) => [
-    state.workspaces[workspaceLocation].programPrependValue,
-    state.workspaces[workspaceLocation].activeEditorTabIndex,
-    state.workspaces[workspaceLocation].editorTabs,
-    state.workspaces[workspaceLocation].execTime,
-    state.workspaces[workspaceLocation].isFolderModeEnabled,
-    state.fileSystem.inBrowserFileSystem,
-    state.session.remoteExecutionSession
+  const [code, execTime]: [string, number] = yield select((state: OverallState) => [
+    state.workspaces[workspaceLocation].editorTabs[0].value,
+    state.workspaces[workspaceLocation].execTime
   ]);
-
-  if (activeEditorTabIndex === null) {
-    throw new Error('Cannot evaluate program without an entrypoint file.');
-  }
-
-  const defaultFilePath = `${WORKSPACE_BASE_PATHS[workspaceLocation]}/program.js`;
-  let files: Record<string, string>;
-  if (isFolderModeEnabled) {
-    files = yield call(retrieveFilesInWorkspaceAsRecord, workspaceLocation, fileSystem);
-  } else {
-    files = {
-      [defaultFilePath]: editorTabs[activeEditorTabIndex].value
-    };
-  }
-  const entrypointFilePath = editorTabs[activeEditorTabIndex].filePath ?? defaultFilePath;
 
   yield put(actions.addEvent([EventType.RUN_CODE]));
 
-  if (remoteExecutionSession && remoteExecutionSession.workspace === workspaceLocation) {
-    yield put(actions.remoteExecRun(files, entrypointFilePath));
-  } else {
-    // End any code that is running right now.
-    yield put(actions.beginInterruptExecution(workspaceLocation));
-    const entrypointCode = files[entrypointFilePath];
-    yield* clearContext(workspaceLocation, entrypointCode);
-    yield put(actions.clearReplOutput(workspaceLocation));
-    const context = yield select(
-      (state: OverallState) => state.workspaces[workspaceLocation].context
-    );
+  // End any code that is running right now.
+  yield put(actions.beginInterruptExecution(workspaceLocation));
+  yield* clearContext(workspaceLocation, code);
+  yield put(actions.clearReplOutput(workspaceLocation));
 
-    // Insert debugger statements at the lines of the program with a breakpoint.
-    for (const editorTab of editorTabs) {
-      const filePath = editorTab.filePath ?? defaultFilePath;
-      const code = editorTab.value;
-      const breakpoints = editorTab.breakpoints;
-      files[filePath] = yield* insertDebuggerStatements(
-        workspaceLocation,
-        code,
-        breakpoints,
-        context
-      );
-    }
-
-    // Evaluate the prepend silently with a privileged context, if it exists
-    if (prepend.length) {
-      const elevatedContext = makeElevatedContext(context);
-      const prependFilePath = '/prepend.js';
-      const prependFiles = {
-        [prependFilePath]: prepend
-      };
-      yield call(
-        evalCode,
-        prependFiles,
-        prependFilePath,
-        elevatedContext,
-        execTime,
-        workspaceLocation,
-        EVAL_SILENT
-      );
-      // Block use of methods from privileged context
-      yield* blockExtraMethods(elevatedContext, context, execTime, workspaceLocation);
-    }
-
-    yield call(
-      evalCode,
-      files,
-      entrypointFilePath,
-      context,
-      execTime,
-      workspaceLocation,
-      EVAL_EDITOR
-    );
-  }
-}
-
-export function* runTestCase(
-  workspaceLocation: WorkspaceLocation,
-  index: number
-): Generator<StrictEffect, boolean, any> {
-  const [prepend, value, postpend, testcase]: [string, string, string, string] = yield select(
-    (state: OverallState) => {
-      const prepend = state.workspaces[workspaceLocation].programPrependValue;
-      const postpend = state.workspaces[workspaceLocation].programPostpendValue;
-      // TODO: Hardcoded to make use of the first editor tab. Rewrite after editor tabs are added.
-      const value = state.workspaces[workspaceLocation].editorTabs[0].value;
-      const testcase = state.workspaces[workspaceLocation].editorTestcases[index].program;
-      return [prepend, value, postpend, testcase] as [string, string, string, string];
-    }
-  );
-  const type: TestcaseType = yield select(
-    (state: OverallState) => state.workspaces[workspaceLocation].editorTestcases[index].type
-  );
-  const execTime: number = yield select(
-    (state: OverallState) => state.workspaces[workspaceLocation].execTime
-  );
-
-  yield* clearContext(workspaceLocation, value);
-
-  // Do NOT clear the REPL output!
-
-  /**
-   *  Shard a new privileged context elevated to use Source chapter 4 for testcases - enables
-   *  grader programs in postpend to run as expected without raising interpreter errors
-   *  But, do not persist this context to the workspace state - this prevent students from using
-   *  this elevated context to run dis-allowed code beyond the current chapter from the REPL
-   */
-  const context: Context<any> = yield select(
-    (state: OverallState) => state.workspaces[workspaceLocation].context
-  );
-
-  // Execute prepend silently in privileged context
-  const elevatedContext = makeElevatedContext(context);
-  const prependFilePath = '/prepend.js';
-  const prependFiles = {
-    [prependFilePath]: prepend
-  };
-  yield call(
-    evalCode,
-    prependFiles,
-    prependFilePath,
-    elevatedContext,
-    execTime,
-    workspaceLocation,
-    EVAL_SILENT
-  );
-
-  // Block use of methods from privileged context using a randomly generated blocking key
-  // Then execute student program silently in the original workspace context
-  const blockKey = String(random(1048576, 68719476736));
-  yield* blockExtraMethods(elevatedContext, context, execTime, workspaceLocation, blockKey);
-  const valueFilePath = '/value.js';
-  const valueFiles = {
-    [valueFilePath]: value
-  };
-  yield call(
-    evalCode,
-    valueFiles,
-    valueFilePath,
-    context,
-    execTime,
-    workspaceLocation,
-    EVAL_SILENT
-  );
-
-  // Halt execution if the student's code in the editor results in an error
-  if (context.errors.length) {
-    yield put(actions.evalTestcaseFailure(context.errors, workspaceLocation, index));
-    return false;
-  }
-
-  // Execute postpend silently back in privileged context, if it exists
-  if (postpend) {
-    // TODO: consider doing a swap. If the user has modified any of the variables,
-    // i.e. reusing any of the "reserved" names, prevent it from being accessed in the REPL.
-    yield* restoreExtraMethods(elevatedContext, context, execTime, workspaceLocation, blockKey);
-    const postpendFilePath = '/postpend.js';
-    const postpendFiles = {
-      [postpendFilePath]: postpend
-    };
-    yield call(
-      evalCode,
-      postpendFiles,
-      postpendFilePath,
-      elevatedContext,
-      execTime,
-      workspaceLocation,
-      EVAL_SILENT
-    );
-    yield* blockExtraMethods(elevatedContext, context, execTime, workspaceLocation, blockKey);
-  }
-  // Finally execute the testcase function call in the privileged context
-  yield* evalTestCode(testcase, elevatedContext, execTime, workspaceLocation, index, type);
-  return true;
+  yield call(evalCode, code, execTime, workspaceLocation, EVAL_EDITOR);
 }
 
 export function* blockExtraMethods(
@@ -910,35 +527,11 @@ export function* blockExtraMethods(
   const toBeBlocked = getDifferenceInMethods(elevatedContext, context);
   if (unblockKey) {
     const storeValues = getStoreExtraMethodsString(toBeBlocked, unblockKey);
-    const storeValuesFilePath = '/storeValues.js';
-    const storeValuesFiles = {
-      [storeValuesFilePath]: storeValues
-    };
-    yield call(
-      evalCode,
-      storeValuesFiles,
-      storeValuesFilePath,
-      elevatedContext,
-      execTime,
-      workspaceLocation,
-      EVAL_SILENT
-    );
+    yield call(evalCode, storeValues, execTime, workspaceLocation, EVAL_SILENT);
   }
 
   const nullifier = getBlockExtraMethodsString(toBeBlocked);
-  const nullifierFilePath = '/nullifier.js';
-  const nullifierFiles = {
-    [nullifierFilePath]: nullifier
-  };
-  yield call(
-    evalCode,
-    nullifierFiles,
-    nullifierFilePath,
-    elevatedContext,
-    execTime,
-    workspaceLocation,
-    EVAL_SILENT
-  );
+  yield call(evalCode, nullifier, execTime, workspaceLocation, EVAL_SILENT);
 }
 
 export function* restoreExtraMethods(
@@ -950,215 +543,26 @@ export function* restoreExtraMethods(
 ) {
   const toUnblock = getDifferenceInMethods(elevatedContext, context);
   const restorer = getRestoreExtraMethodsString(toUnblock, unblockKey);
-  const restorerFilePath = '/restorer.js';
-  const restorerFiles = {
-    [restorerFilePath]: restorer
-  };
-  yield call(
-    evalCode,
-    restorerFiles,
-    restorerFilePath,
-    elevatedContext,
-    execTime,
-    workspaceLocation,
-    EVAL_SILENT
-  );
+  yield call(evalCode, restorer, execTime, workspaceLocation, EVAL_SILENT);
 }
 
 export function* evalCode(
-  files: Record<string, string>,
-  entrypointFilePath: string,
-  context: Context,
+  code: string,
   execTime: number,
   workspaceLocation: WorkspaceLocation,
   actionType: string
 ): SagaIterator {
-  context.runtime.debuggerOn =
-    (actionType === EVAL_EDITOR || actionType === DEBUG_RESUME) && context.chapter > 2;
-
-  // Logic for execution of substitution model visualizer
-  const correctWorkspace = workspaceLocation === 'playground' || workspaceLocation === 'sicp';
-  const substIsActive: boolean = correctWorkspace
-    ? yield select(
-        (state: OverallState) =>
-          (state.workspaces[workspaceLocation] as PlaygroundWorkspaceState | SicpWorkspaceState)
-            .usingSubst
-      )
-    : false;
-  const stepLimit: number = yield select(
-    (state: OverallState) => state.workspaces[workspaceLocation].stepLimit
-  );
-  const substActiveAndCorrectChapter = context.chapter <= 2 && substIsActive;
-  if (substActiveAndCorrectChapter) {
-    context.executionMethod = 'interpreter';
-    // icon to blink
-    const icon = document.getElementById(SideContentType.substVisualizer + '-icon');
-    if (icon) {
-      icon.classList.add('side-content-tab-alert');
+  try {
+    const result = yield call(run, code);
+    yield put(notifyProgramEvaluated(result, code, workspaceLocation));
+    if (actionType !== EVAL_SILENT) {
+      yield put(actions.evalInterpreterSuccess(result, workspaceLocation));
     }
-  }
-
-  const entrypointCode = files[entrypointFilePath];
-
-  function call_variant(variant: Variant) {
-    if (variant === Variant.NON_DET) {
-      return entrypointCode.trim() === TRY_AGAIN
-        ? call(resume, lastNonDetResult)
-        : call(runFilesInContext, files, entrypointFilePath, context, {
-            executionMethod: 'interpreter',
-            originalMaxExecTime: execTime,
-            stepLimit: stepLimit,
-            useSubst: substActiveAndCorrectChapter
-          });
-    } else if (variant === Variant.LAZY) {
-      return call(runFilesInContext, files, entrypointFilePath, context, {
-        scheduler: 'preemptive',
-        originalMaxExecTime: execTime,
-        stepLimit: stepLimit,
-        useSubst: substActiveAndCorrectChapter
-      });
-    } else if (variant === Variant.WASM) {
-      // Note: WASM does not support multiple file programs.
-      return call(wasm_compile_and_run, entrypointCode, context, actionType === EVAL_REPL);
-    } else {
-      throw new Error('Unknown variant: ' + variant);
-    }
-  }
-  async function wasm_compile_and_run(
-    wasmCode: string,
-    wasmContext: Context,
-    isRepl: boolean
-  ): Promise<Result> {
-    return Sourceror.compile(wasmCode, wasmContext, isRepl)
-      .then((wasmModule: WebAssembly.Module) => {
-        const transcoder = new Sourceror.Transcoder();
-        return Sourceror.run(
-          wasmModule,
-          Sourceror.makePlatformImports(makeSourcerorExternalBuiltins(wasmContext), transcoder),
-          transcoder,
-          wasmContext,
-          isRepl
-        );
-      })
-      .then(
-        (returnedValue: any): Result => ({ status: 'finished', context, value: returnedValue }),
-        (e: any): Result => {
-          console.log(e);
-          return { status: 'error' };
-        }
-      );
-  }
-
-  const isNonDet: boolean = context.variant === Variant.NON_DET;
-  const isLazy: boolean = context.variant === Variant.LAZY;
-  const isWasm: boolean = context.variant === Variant.WASM;
-
-  // Handles `console.log` statements in fullJS
-  const detachConsole: () => void =
-    context.chapter === Chapter.FULL_JS
-      ? DisplayBufferService.attachConsole(workspaceLocation)
-      : () => {};
-
-  const { result, interrupted, paused } = yield race({
-    result:
-      actionType === DEBUG_RESUME
-        ? call(resume, lastDebuggerResult)
-        : isNonDet || isLazy || isWasm
-        ? call_variant(context.variant)
-        : call(runFilesInContext, files, entrypointFilePath, context, {
-            scheduler: 'preemptive',
-            originalMaxExecTime: execTime,
-            stepLimit: stepLimit,
-            throwInfiniteLoops: true,
-            useSubst: substActiveAndCorrectChapter
-          }),
-
-    /**
-     * A BEGIN_INTERRUPT_EXECUTION signals the beginning of an interruption,
-     * i.e the trigger for the interpreter to interrupt execution.
-     */
-    interrupted: take(BEGIN_INTERRUPT_EXECUTION),
-    paused: take(BEGIN_DEBUG_PAUSE)
-  });
-
-  detachConsole();
-
-  if (interrupted) {
-    interrupt(context);
-    /* Redundancy, added ensure that interruption results in an error. */
-    context.errors.push(new InterruptedError(context.runtime.nodes[0]));
-    yield put(actions.debuggerReset(workspaceLocation));
-    yield put(actions.endInterruptExecution(workspaceLocation));
-    yield call(showWarningMessage, 'Execution aborted', 750);
-    return;
-  }
-
-  if (paused) {
-    yield put(actions.endDebuggerPause(workspaceLocation));
-    lastDebuggerResult = manualToggleDebugger(context);
-    yield call(updateInspector, workspaceLocation);
-    yield call(showWarningMessage, 'Execution paused', 750);
-    return;
-  }
-
-  if (actionType === EVAL_EDITOR) {
-    lastDebuggerResult = result;
-  }
-  yield call(updateInspector, workspaceLocation);
-
-  if (
-    result.status !== 'suspended' &&
-    result.status !== 'finished' &&
-    result.status !== 'suspended-non-det' &&
-    result.status !== 'suspended-ec-eval'
-  ) {
-    yield* dumpDisplayBuffer(workspaceLocation);
-    yield put(actions.evalInterpreterError(context.errors, workspaceLocation));
-
-    // we need to parse again, but preserve the errors in context
-    const oldErrors = context.errors;
-    context.errors = [];
-    // Note: Type checking does not support multiple file programs.
-    const parsed = parse(entrypointCode, context);
-    const typeErrors = parsed && typeCheck(validateAndAnnotate(parsed!, context), context)[1];
-    context.errors = oldErrors;
-    // for achievement event tracking
-    const events = context.errors.length > 0 ? [EventType.ERROR] : [];
-
-    if (typeErrors && typeErrors.length > 0) {
-      events.push(EventType.ERROR);
-      yield put(
-        actions.sendReplInputToOutput('Hints:\n' + parseError(typeErrors), workspaceLocation)
-      );
-    }
-    yield put(actions.addEvent(events));
-    return;
-  } else if (result.status === 'suspended' || result.status === 'suspended-ec-eval') {
-    yield put(actions.endDebuggerPause(workspaceLocation));
-    yield put(actions.evalInterpreterSuccess('Breakpoint hit!', workspaceLocation));
-    return;
-  } else if (isNonDet) {
-    if (result.value === 'cut') {
-      result.value = undefined;
-    }
-    lastNonDetResult = result;
-  }
-
-  yield* dumpDisplayBuffer(workspaceLocation);
-
-  // Do not write interpreter output to REPL, if executing chunks (e.g. prepend/postpend blocks)
-  if (actionType !== EVAL_SILENT) {
-    yield put(actions.evalInterpreterSuccess(result.value, workspaceLocation));
-  }
-
-  // For EVAL_EDITOR and EVAL_REPL, we send notification to workspace that a program has been evaluated
-  if (actionType === EVAL_EDITOR || actionType === EVAL_REPL || actionType === DEBUG_RESUME) {
-    if (context.errors.length > 0) {
-      yield put(actions.addEvent([EventType.ERROR]));
-    }
-    yield put(
-      notifyProgramEvaluated(result, lastDebuggerResult, entrypointCode, context, workspaceLocation)
-    );
+  } catch (err) {
+    yield put(actions.addEvent([EventType.ERROR]));
+    // TODO: Implement error handling.
+    // yield put(actions.evalInterpreterError([err.message], workspaceLocation));
+    console.log(err);
   }
 }
 

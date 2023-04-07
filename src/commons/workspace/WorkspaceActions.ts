@@ -1,4 +1,3 @@
-import { Context } from 'js-slang';
 import { Chapter, Variant } from 'js-slang/dist/types';
 import { action } from 'typesafe-actions';
 
@@ -348,16 +347,12 @@ export const promptAutocomplete = (
 
 export const notifyProgramEvaluated = (
   result: any,
-  lastDebuggerResult: any,
   code: string,
-  context: Context,
   workspaceLocation?: WorkspaceLocation
 ) =>
   action(NOTIFY_PROGRAM_EVALUATED, {
     result,
-    lastDebuggerResult,
     code,
-    context,
     workspaceLocation
   });
 
