@@ -1,12 +1,13 @@
-name: Build sourceacademy.org
+name: Build CS4215-GN-IY.github.io
 on:
   push:
     branches:
       - master
+  workflow_dispatch:
 
 jobs:
   deploy:
-    name: Build and deploy sourceacademy.org
+    name: Build and deploy CS4215-GN-IY.github.io
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
@@ -38,13 +39,13 @@ jobs:
         yarn install
         yarn run build
       env:
-        REACT_APP_URL_SHORTENER_SIGNATURE: ${{ secrets.REACT_APP_URL_SHORTENER_SIGNATURE }}
-        REACT_APP_URL_SHORTENER_BASE: ${{ secrets.REACT_APP_URL_SHORTENER_BASE }}
+        # REACT_APP_URL_SHORTENER_SIGNATURE: ${{ secrets.REACT_APP_URL_SHORTENER_SIGNATURE }}
+        # REACT_APP_URL_SHORTENER_BASE: ${{ secrets.REACT_APP_URL_SHORTENER_BASE }}
         REACT_APP_PLAYGROUND_ONLY: "TRUE"
         REACT_APP_ENABLE_GITHUB_ASSESSMENTS: "TRUE"
         REACT_APP_VERSION: ${{ format('{0}-{1}', github.sha, steps.get-time.outputs.time) }}
         REACT_APP_ENVIRONMENT: "pages"
-        PUBLIC_URL: "https://sourceacademy.org"
+        PUBLIC_URL: "https://CS4215-GN-IY.github.io"
     - name: Remove sourcemaps
       working-directory: build
       run: |
@@ -52,7 +53,7 @@ jobs:
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
-        external_repository: source-academy/sourceacademy.org
+        external_repository: CS4215-GN-IY/playground
         deploy_key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
         publish_dir: ./build
         publish_branch: master
