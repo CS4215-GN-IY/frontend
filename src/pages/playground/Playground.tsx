@@ -9,7 +9,7 @@ import _, { isEqual } from 'lodash';
 import { decompressFromEncodedURIComponent } from 'lz-string';
 import * as React from 'react';
 import { HotKeys } from 'react-hotkeys';
-import { useDispatch, useStore } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { RouteComponentProps, useHistory, useLocation } from 'react-router';
 import { AnyAction, Dispatch } from 'redux';
 import {
@@ -18,15 +18,7 @@ import {
   debuggerReset,
   debuggerResume
 } from 'src/commons/application/actions/InterpreterActions';
-import {
-  loginGitHub,
-  logoutGitHub,
-  logoutGoogle
-} from 'src/commons/application/actions/SessionActions';
-import {
-  setEditorSessionId,
-  setSharedbConnected
-} from 'src/commons/collabEditing/CollabEditingActions';
+import { setSharedbConnected } from 'src/commons/collabEditing/CollabEditingActions';
 import { useResponsive, useTypedSelector } from 'src/commons/utils/Hooks';
 import {
   showFullJSWarningOnUrlLoad,
@@ -46,22 +38,10 @@ import {
   sendReplInputToOutput,
   setFolderMode,
   toggleEditorAutorun,
-  toggleFolderMode,
   updateActiveEditorTabIndex,
   updateReplValue
 } from 'src/commons/workspace/WorkspaceActions';
 import { EditorTabState, WorkspaceLocation } from 'src/commons/workspace/WorkspaceTypes';
-import {
-  githubOpenFile,
-  githubSaveFile,
-  githubSaveFileAs
-} from 'src/features/github/GitHubActions';
-import {
-  persistenceInitialise,
-  persistenceOpenPicker,
-  persistenceSaveFile,
-  persistenceSaveFileAs
-} from 'src/features/persistence/PersistenceActions';
 import {
   generateLzString,
   shortenURL,
@@ -72,7 +52,6 @@ import {
   getDefaultFilePath,
   InterpreterOutput,
   isSourceLanguage,
-  OverallState,
   sourceLanguages
 } from '../../commons/application/ApplicationTypes';
 import { ExternalLibraryName } from '../../commons/application/types/ExternalTypes';
@@ -81,11 +60,7 @@ import { ControlBarChapterSelect } from '../../commons/controlBar/ControlBarChap
 import { ControlBarClearButton } from '../../commons/controlBar/ControlBarClearButton';
 import { ControlBarEvalButton } from '../../commons/controlBar/ControlBarEvalButton';
 import { ControlBarExecutionTime } from '../../commons/controlBar/ControlBarExecutionTime';
-import { ControlBarGoogleDriveButtons } from '../../commons/controlBar/ControlBarGoogleDriveButtons';
-import { ControlBarSessionButtons } from '../../commons/controlBar/ControlBarSessionButton';
 import { ControlBarShareButton } from '../../commons/controlBar/ControlBarShareButton';
-import { ControlBarToggleFolderModeButton } from '../../commons/controlBar/ControlBarToggleFolderModeButton';
-import { ControlBarGitHubButtons } from '../../commons/controlBar/github/ControlBarGitHubButtons';
 import {
   convertEditorTabStateToProps,
   NormalEditorContainerProps
@@ -260,7 +235,6 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
   const [deviceSecret, setDeviceSecret] = React.useState<string | undefined>();
   const location = useLocation();
   const history = useHistory();
-  const store = useStore<OverallState>();
   const searchParams = new URLSearchParams(location.search);
   const shouldAddDevice = searchParams.get('add_device');
 
@@ -276,7 +250,6 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
     history.replace(location.pathname);
   }
 
-  const [lastEdit, setLastEdit] = React.useState(new Date());
   const [isGreen, setIsGreen] = React.useState(false);
   const [selectedTab, setSelectedTab] = React.useState(
     shouldAddDevice ? SideContentType.remoteExecution : SideContentType.introduction
@@ -368,7 +341,6 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
   );
 
   const onEditorValueChange = React.useCallback((editorTabIndex, newEditorValue) => {
-    setLastEdit(new Date());
     propsRef.current.handleEditorValueChange(editorTabIndex, newEditorValue);
   }, []);
 
@@ -543,56 +515,6 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
     [props.handleReplEval, props.isRunning, selectedTab]
   );
 
-  const { persistenceUser, persistenceFile } = props;
-  // Compute this here to avoid re-rendering the button every keystroke
-  const persistenceIsDirty =
-    persistenceFile && (!persistenceFile.lastSaved || persistenceFile.lastSaved < lastEdit);
-  const persistenceButtons = React.useMemo(() => {
-    return (
-      <ControlBarGoogleDriveButtons
-        isFolderModeEnabled={isFolderModeEnabled}
-        currentFile={persistenceFile}
-        loggedInAs={persistenceUser}
-        isDirty={persistenceIsDirty}
-        key="googledrive"
-        onClickSaveAs={() => dispatch(persistenceSaveFileAs())}
-        onClickOpen={() => dispatch(persistenceOpenPicker())}
-        onClickSave={
-          persistenceFile ? () => dispatch(persistenceSaveFile(persistenceFile)) : undefined
-        }
-        onClickLogOut={() => dispatch(logoutGoogle())}
-        onPopoverOpening={() => dispatch(persistenceInitialise())}
-      />
-    );
-  }, [isFolderModeEnabled, persistenceFile, persistenceUser, persistenceIsDirty, dispatch]);
-
-  const githubOctokitObject = useTypedSelector(store => store.session.githubOctokitObject);
-  const githubSaveInfo = props.githubSaveInfo;
-  const githubPersistenceIsDirty =
-    githubSaveInfo && (!githubSaveInfo.lastSaved || githubSaveInfo.lastSaved < lastEdit);
-  const githubButtons = React.useMemo(() => {
-    return (
-      <ControlBarGitHubButtons
-        key="github"
-        isFolderModeEnabled={isFolderModeEnabled}
-        loggedInAs={githubOctokitObject.octokit}
-        githubSaveInfo={githubSaveInfo}
-        isDirty={githubPersistenceIsDirty}
-        onClickOpen={() => dispatch(githubOpenFile())}
-        onClickSaveAs={() => dispatch(githubSaveFileAs())}
-        onClickSave={() => dispatch(githubSaveFile())}
-        onClickLogIn={() => dispatch(loginGitHub())}
-        onClickLogOut={() => dispatch(logoutGitHub())}
-      />
-    );
-  }, [
-    dispatch,
-    githubOctokitObject.octokit,
-    githubPersistenceIsDirty,
-    githubSaveInfo,
-    isFolderModeEnabled
-  ]);
-
   const executionTime = React.useMemo(
     () => (
       <ControlBarExecutionTime
@@ -602,33 +524,6 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
       />
     ),
     [props.execTime, props.handleChangeExecTime]
-  );
-
-  const getEditorValue = React.useCallback(
-    // TODO: Hardcoded to make use of the first editor tab. Rewrite after editor tabs are added.
-    () => store.getState().workspaces[workspaceLocation].editorTabs[0].value,
-    [store, workspaceLocation]
-  );
-
-  const sessionButtons = React.useMemo(
-    () => (
-      <ControlBarSessionButtons
-        isFolderModeEnabled={isFolderModeEnabled}
-        editorSessionId={props.editorSessionId}
-        getEditorValue={getEditorValue}
-        handleSetEditorSessionId={id => dispatch(setEditorSessionId(workspaceLocation, id))}
-        sharedbConnected={props.sharedbConnected}
-        key="session"
-      />
-    ),
-    [
-      dispatch,
-      getEditorValue,
-      isFolderModeEnabled,
-      props.editorSessionId,
-      props.sharedbConnected,
-      workspaceLocation
-    ]
   );
 
   const shareButton = React.useMemo(() => {
@@ -647,25 +542,6 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
       />
     );
   }, [dispatch, isSicpEditor, props.initialEditorValueHash, props.queryString, props.shortURL]);
-
-  const toggleFolderModeButton = React.useMemo(() => {
-    return (
-      <ControlBarToggleFolderModeButton
-        isFolderModeEnabled={isFolderModeEnabled}
-        isSessionActive={props.editorSessionId !== ''}
-        isPersistenceActive={persistenceFile !== undefined || githubSaveInfo.repoName !== ''}
-        toggleFolderMode={() => dispatch(toggleFolderMode(workspaceLocation))}
-        key="folder"
-      />
-    );
-  }, [
-    dispatch,
-    githubSaveInfo.repoName,
-    isFolderModeEnabled,
-    persistenceFile,
-    props.editorSessionId,
-    workspaceLocation
-  ]);
 
   const playgroundIntroductionTab: SideContentTab = React.useMemo(
     () => ({
@@ -920,12 +796,7 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
         editorButtons: [
           autorunButtons,
           chapterSelect,
-          props.playgroundSourceChapter === Chapter.FULL_JS ? null : shareButton,
-          isSicpEditor ? null : sessionButtons,
-          // Local imports/exports require Source 2+ as Source 1 does not have lists.
-          props.playgroundSourceChapter === Chapter.SOURCE_1 ? null : toggleFolderModeButton,
-          persistenceButtons,
-          githubButtons
+          props.playgroundSourceChapter === Chapter.FULL_JS ? null : shareButton
         ]
       },
       selectedTabId: selectedTab,
