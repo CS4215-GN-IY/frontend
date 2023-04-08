@@ -558,8 +558,6 @@ export function* evalCode(
     }
   } catch (err) {
     yield put(actions.addEvent([EventType.ERROR]));
-    // TODO: Implement error handling.
     yield put(actions.evalInterpreterError(err, workspaceLocation));
-    console.log(err);
   }
 }
