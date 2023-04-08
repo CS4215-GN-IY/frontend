@@ -4,8 +4,6 @@ on:
     branches:
       - master
   workflow_dispatch:
-  # Temporary for testing.
-  pull_request:
 
 jobs:
   deploy:
