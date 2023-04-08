@@ -111,7 +111,7 @@ export async function shortenURLRequest(
   queryString: string,
   keyword: string
 ): Promise<Response | null> {
-  const url = `${window.location.protocol}//${window.location.host}/playground#${queryString}`;
+  const url = `${window.location.protocol}//${window.location.host}#${queryString}`;
 
   const params = {
     signature: Constants.urlShortenerSignature,
