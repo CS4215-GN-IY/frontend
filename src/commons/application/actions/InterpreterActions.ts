@@ -1,4 +1,4 @@
-import { SourceError, Value } from 'js-slang/dist/types';
+import { Value } from 'js-slang/dist/types';
 import { action } from 'typesafe-actions';
 
 import { WorkspaceLocation } from '../../workspace/WorkspaceTypes';
@@ -34,8 +34,8 @@ export const evalTestcaseFailure = (
   index: number
 ) => action(EVAL_TESTCASE_FAILURE, { type: 'errors', value, workspaceLocation, index });
 
-export const evalInterpreterError = (errors: SourceError[], workspaceLocation: WorkspaceLocation) =>
-  action(EVAL_INTERPRETER_ERROR, { type: 'errors', errors, workspaceLocation });
+export const evalInterpreterError = (error: Error, workspaceLocation: WorkspaceLocation) =>
+  action(EVAL_INTERPRETER_ERROR, { type: 'errors', error, workspaceLocation });
 
 export const beginInterruptExecution = (workspaceLocation: WorkspaceLocation) =>
   action(BEGIN_INTERRUPT_EXECUTION, { workspaceLocation });

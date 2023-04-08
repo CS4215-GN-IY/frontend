@@ -30,7 +30,7 @@ const mockResultOutput: ResultOutput = {
 
 const mockErrorOutput: ErrorOutput = {
   type: 'errors',
-  errors: [mockTypeError()],
+  error: [mockTypeError()],
   consoleLogs: []
 };
 

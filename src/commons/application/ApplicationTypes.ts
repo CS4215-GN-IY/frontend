@@ -1,4 +1,4 @@
-import { Chapter, Language, SourceError, Variant } from 'js-slang/dist/types';
+import { Chapter, Language, Variant } from 'js-slang/dist/types';
 
 import { AcademyState } from '../../features/academy/AcademyTypes';
 import { AchievementState } from '../../features/achievement/AchievementTypes';
@@ -85,7 +85,7 @@ export type ResultOutput = {
  */
 export type ErrorOutput = {
   type: 'errors';
-  errors: SourceError[];
+  error: Error;
   consoleLogs: string[];
 };
 

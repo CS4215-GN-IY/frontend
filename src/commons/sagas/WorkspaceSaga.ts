@@ -1,12 +1,11 @@
 import { FSModule } from 'browserfs/dist/node/core/FS';
 import { run } from 'c-slang';
-import { Context, findDeclaration, getNames, interrupt, runInContext } from 'js-slang';
+import { Context, findDeclaration, getNames } from 'js-slang';
 import { defineSymbol } from 'js-slang/dist/createContext';
-import { InterruptedError } from 'js-slang/dist/errors/errors';
 import { Chapter, Variant } from 'js-slang/dist/types';
 import Phaser from 'phaser';
 import { SagaIterator } from 'redux-saga';
-import { call, put, race, select, StrictEffect, take } from 'redux-saga/effects';
+import { call, put, select, StrictEffect, take } from 'redux-saga/effects';
 import EnvVisualizer from 'src/features/envVisualizer/EnvVisualizer';
 
 import { EventType } from '../../features/achievement/AchievementTypes';
@@ -19,12 +18,11 @@ import {
 } from '../application/ApplicationTypes';
 import { externalLibraries, ExternalLibraryName } from '../application/types/ExternalTypes';
 import {
-  BEGIN_INTERRUPT_EXECUTION,
   DEBUG_RESET,
   DEBUG_RESUME,
   UPDATE_EDITOR_HIGHLIGHTED_LINES
 } from '../application/types/InterpreterTypes';
-import { Library, TestcaseType, TestcaseTypes } from '../assessment/AssessmentTypes';
+import { Library } from '../assessment/AssessmentTypes';
 import { Documentation } from '../documentation/Documentation';
 import { writeFileRecursively } from '../fileSystem/utils';
 import { actions } from '../utils/ActionsHelper';
@@ -561,58 +559,7 @@ export function* evalCode(
   } catch (err) {
     yield put(actions.addEvent([EventType.ERROR]));
     // TODO: Implement error handling.
-    // yield put(actions.evalInterpreterError([err.message], workspaceLocation));
+    yield put(actions.evalInterpreterError(err, workspaceLocation));
     console.log(err);
-  }
-}
-
-export function* evalTestCode(
-  code: string,
-  context: Context,
-  execTime: number,
-  workspaceLocation: WorkspaceLocation,
-  index: number,
-  type: TestcaseType
-) {
-  yield put(actions.resetTestcase(workspaceLocation, index));
-  const { result, interrupted } = yield race({
-    result: call(runInContext, code, context, {
-      scheduler: 'preemptive',
-      originalMaxExecTime: execTime,
-      throwInfiniteLoops: true
-    }),
-    /**
-     * A BEGIN_INTERRUPT_EXECUTION signals the beginning of an interruption,
-     * i.e the trigger for the interpreter to interrupt execution.
-     */
-    interrupted: take(BEGIN_INTERRUPT_EXECUTION)
-  });
-
-  if (interrupted) {
-    interrupt(context);
-    yield* dumpDisplayBuffer(workspaceLocation);
-    // Redundancy, added ensure that interruption results in an error.
-    context.errors.push(new InterruptedError(context.runtime.nodes[0]));
-    yield put(actions.endInterruptExecution(workspaceLocation));
-    yield call(showWarningMessage, `Execution of testcase ${index} aborted`, 750);
-    return;
-  }
-
-  yield* dumpDisplayBuffer(workspaceLocation);
-  /** result.status here is either 'error' or 'finished'; 'suspended' is not possible
-   *  since debugger is presently disabled in assessment and grading environments
-   */
-  if (result.status === 'error') {
-    yield put(actions.evalInterpreterError(context.errors, workspaceLocation));
-    yield put(actions.evalTestcaseFailure(context.errors, workspaceLocation, index));
-  } else if (result.status === 'finished') {
-    // Execution of the testcase is successful, i.e. no errors were raised
-    yield put(actions.evalInterpreterSuccess(result.value, workspaceLocation));
-    yield put(actions.evalTestcaseSuccess(result.value, workspaceLocation, index));
-  }
-
-  // If a opaque testcase was executed, remove its output from the REPL
-  if (type === TestcaseTypes.opaque) {
-    yield put(actions.clearReplOutputLast(workspaceLocation));
   }
 }
