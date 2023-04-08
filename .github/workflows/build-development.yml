@@ -41,8 +41,8 @@ jobs:
         yarn install
         yarn run build
       env:
-        # REACT_APP_URL_SHORTENER_SIGNATURE: ${{ secrets.REACT_APP_URL_SHORTENER_SIGNATURE }}
-        # REACT_APP_URL_SHORTENER_BASE: ${{ secrets.REACT_APP_URL_SHORTENER_BASE }}
+        REACT_APP_URL_SHORTENER_SIGNATURE: ${{ secrets.REACT_APP_URL_SHORTENER_SIGNATURE }}
+        REACT_APP_URL_SHORTENER_BASE: "https://share.cs4215.ianyong.com/"
         REACT_APP_PLAYGROUND_ONLY: "TRUE"
         REACT_APP_VERSION: ${{ format('{0}-{1}', github.sha, steps.get-time.outputs.time) }}
         REACT_APP_ENVIRONMENT: "pages"
