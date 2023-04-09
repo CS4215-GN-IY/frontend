@@ -3,7 +3,6 @@
 exports[`Application renders correctly 1`] = `
 "<ContextProvider value={{...}}>
   <div className=\\"Application\\">
-    <NavigationBar handleLogOut={[Function: handleLogOut]} handleGitHubLogIn={[Function: handleGitHubLogIn]} handleGitHubLogOut={[Function: handleGitHubLogOut]} handleCreateCourse={[Function: handleCreateCourse]} role={[undefined]} name={[undefined]} courses={{...}} courseId={[undefined]} courseShortName={[undefined]} enableAchievements={[undefined]} enableSourcecast={[undefined]} assessmentTypes={[undefined]} />
     <div className=\\"Application__main\\">
       <Switch>
         <Route path=\\"/login\\" component={[Function: Login]} />
@@ -27,7 +26,6 @@ exports[`Application renders correctly 1`] = `
 exports[`Application shows disabled when in disabled period 1`] = `
 "<ContextProvider value={{...}}>
   <div className=\\"Application\\">
-    <NavigationBar handleLogOut={[Function: handleLogOut]} handleGitHubLogIn={[Function: handleGitHubLogIn]} handleGitHubLogOut={[Function: handleGitHubLogOut]} handleCreateCourse={[Function: handleCreateCourse]} role={[undefined]} name={[undefined]} courses={{...}} courseId={[undefined]} courseShortName={[undefined]} enableAchievements={[undefined]} enableSourcecast={[undefined]} assessmentTypes={[undefined]} />
     <div className=\\"Application__main\\">
       <Switch>
         <Route path=\\"/login\\" component={[Function: Login]} />

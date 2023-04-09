@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/browser';
 import sharedbAce from '@sourceacademy/sharedb-ace';
 import * as React from 'react';
 
@@ -37,7 +36,6 @@ const useShareAce: EditorHook = (inProps, outProps, keyBindings, reactAceRef) =>
     });
     ShareAce.on('error', (path: string, error: any) => {
       console.error('ShareAce error', error);
-      Sentry.captureException(error);
     });
 
     // WebSocket connection status detection logic

@@ -417,13 +417,13 @@ export const WorkspaceReducer: Reducer<WorkspaceManagerState> = (
       if (lastOutput !== undefined && lastOutput.type === 'running') {
         newOutput = state[workspaceLocation].output.slice(0, -1).concat({
           type: action.payload.type,
-          errors: action.payload.errors,
+          error: action.payload.error,
           consoleLogs: lastOutput.consoleLogs
         } as ErrorOutput);
       } else {
         newOutput = state[workspaceLocation].output.concat({
           type: action.payload.type,
-          errors: action.payload.errors,
+          error: action.payload.error,
           consoleLogs: []
         } as ErrorOutput);
       }
@@ -987,9 +987,7 @@ export const WorkspaceReducer: Reducer<WorkspaceManagerState> = (
           debuggerContext: {
             ...state[workspaceLocation].debuggerContext,
             result: action.payload.result,
-            lastDebuggerResult: action.payload.lastDebuggerResult,
             code: action.payload.code,
-            context: action.payload.context,
             workspaceLocation: action.payload.workspaceLocation
           }
         }

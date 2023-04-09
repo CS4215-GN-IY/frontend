@@ -4,13 +4,12 @@ import { Octokit } from '@octokit/rest';
 import { Ace, Range } from 'ace-builds';
 import { FSModule } from 'browserfs/dist/node/core/FS';
 import classNames from 'classnames';
-import { isStepperOutput } from 'js-slang/dist/stepper/stepper';
 import { Chapter, Variant } from 'js-slang/dist/types';
 import _, { isEqual } from 'lodash';
 import { decompressFromEncodedURIComponent } from 'lz-string';
 import * as React from 'react';
 import { HotKeys } from 'react-hotkeys';
-import { useDispatch, useStore } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { RouteComponentProps, useHistory, useLocation } from 'react-router';
 import { AnyAction, Dispatch } from 'redux';
 import {
@@ -19,16 +18,7 @@ import {
   debuggerReset,
   debuggerResume
 } from 'src/commons/application/actions/InterpreterActions';
-import {
-  loginGitHub,
-  logoutGitHub,
-  logoutGoogle
-} from 'src/commons/application/actions/SessionActions';
-import {
-  setEditorSessionId,
-  setSharedbConnected
-} from 'src/commons/collabEditing/CollabEditingActions';
-import SideContentHtmlDisplay from 'src/commons/sideContent/SideContentHtmlDisplay';
+import { setSharedbConnected } from 'src/commons/collabEditing/CollabEditingActions';
 import { useResponsive, useTypedSelector } from 'src/commons/utils/Hooks';
 import {
   showFullJSWarningOnUrlLoad,
@@ -37,11 +27,9 @@ import {
 } from 'src/commons/utils/WarningDialogHelper';
 import {
   addEditorTab,
-  addHtmlConsoleError,
   browseReplHistoryDown,
   browseReplHistoryUp,
   changeSideContentHeight,
-  changeStepLimit,
   evalEditor,
   navigateToDeclaration,
   promptAutocomplete,
@@ -50,22 +38,10 @@ import {
   sendReplInputToOutput,
   setFolderMode,
   toggleEditorAutorun,
-  toggleFolderMode,
   updateActiveEditorTabIndex,
   updateReplValue
 } from 'src/commons/workspace/WorkspaceActions';
 import { EditorTabState, WorkspaceLocation } from 'src/commons/workspace/WorkspaceTypes';
-import {
-  githubOpenFile,
-  githubSaveFile,
-  githubSaveFileAs
-} from 'src/features/github/GitHubActions';
-import {
-  persistenceInitialise,
-  persistenceOpenPicker,
-  persistenceSaveFile,
-  persistenceSaveFileAs
-} from 'src/features/persistence/PersistenceActions';
 import {
   generateLzString,
   shortenURL,
@@ -76,8 +52,6 @@ import {
   getDefaultFilePath,
   InterpreterOutput,
   isSourceLanguage,
-  OverallState,
-  ResultOutput,
   sourceLanguages
 } from '../../commons/application/ApplicationTypes';
 import { ExternalLibraryName } from '../../commons/application/types/ExternalTypes';
@@ -86,12 +60,7 @@ import { ControlBarChapterSelect } from '../../commons/controlBar/ControlBarChap
 import { ControlBarClearButton } from '../../commons/controlBar/ControlBarClearButton';
 import { ControlBarEvalButton } from '../../commons/controlBar/ControlBarEvalButton';
 import { ControlBarExecutionTime } from '../../commons/controlBar/ControlBarExecutionTime';
-import { ControlBarGoogleDriveButtons } from '../../commons/controlBar/ControlBarGoogleDriveButtons';
-import { ControlBarSessionButtons } from '../../commons/controlBar/ControlBarSessionButton';
 import { ControlBarShareButton } from '../../commons/controlBar/ControlBarShareButton';
-import { ControlBarStepLimit } from '../../commons/controlBar/ControlBarStepLimit';
-import { ControlBarToggleFolderModeButton } from '../../commons/controlBar/ControlBarToggleFolderModeButton';
-import { ControlBarGitHubButtons } from '../../commons/controlBar/github/ControlBarGitHubButtons';
 import {
   convertEditorTabStateToProps,
   NormalEditorContainerProps
@@ -105,9 +74,6 @@ import MobileWorkspace, {
 } from '../../commons/mobileWorkspace/MobileWorkspace';
 import { SideBarTab } from '../../commons/sideBar/SideBar';
 import SideContentRemoteExecution from '../../commons/sideContent/remoteExecution/SideContentRemoteExecution';
-import SideContentDataVisualizer from '../../commons/sideContent/SideContentDataVisualizer';
-import SideContentEnvVisualizer from '../../commons/sideContent/SideContentEnvVisualizer';
-import SideContentSubstVisualizer from '../../commons/sideContent/SideContentSubstVisualizer';
 import { SideContentTab, SideContentType } from '../../commons/sideContent/SideContentTypes';
 import { Links } from '../../commons/utils/Constants';
 import { generateSourceIntroduction } from '../../commons/utils/IntroductionHelper';
@@ -269,7 +235,6 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
   const [deviceSecret, setDeviceSecret] = React.useState<string | undefined>();
   const location = useLocation();
   const history = useHistory();
-  const store = useStore<OverallState>();
   const searchParams = new URLSearchParams(location.search);
   const shouldAddDevice = searchParams.get('add_device');
 
@@ -285,7 +250,6 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
     history.replace(location.pathname);
   }
 
-  const [lastEdit, setLastEdit] = React.useState(new Date());
   const [isGreen, setIsGreen] = React.useState(false);
   const [selectedTab, setSelectedTab] = React.useState(
     shouldAddDevice ? SideContentType.remoteExecution : SideContentType.introduction
@@ -298,8 +262,7 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
       chapter: propsRef.current.playgroundSourceChapter
     })
   );
-
-  const remoteExecutionTab: SideContentTab = React.useMemo(
+  React.useMemo(
     () => ({
       label: 'Remote Execution',
       iconName: IconNames.SATELLITE,
@@ -378,7 +341,6 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
   );
 
   const onEditorValueChange = React.useCallback((editorTabIndex, newEditorValue) => {
-    setLastEdit(new Date());
     propsRef.current.handleEditorValueChange(editorTabIndex, newEditorValue);
   }, []);
 
@@ -417,21 +379,6 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
     },
     [hasBreakpoints]
   );
-
-  const processStepperOutput = (output: InterpreterOutput[]) => {
-    const editorOutput = output[0];
-    if (
-      editorOutput &&
-      editorOutput.type === 'result' &&
-      editorOutput.value instanceof Array &&
-      editorOutput.value[0] === Object(editorOutput.value[0]) &&
-      isStepperOutput(editorOutput.value[0])
-    ) {
-      return editorOutput.value;
-    } else {
-      return [];
-    }
-  };
 
   const pushLog = React.useCallback(
     (newInput: Input) => {
@@ -568,56 +515,6 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
     [props.handleReplEval, props.isRunning, selectedTab]
   );
 
-  const { persistenceUser, persistenceFile } = props;
-  // Compute this here to avoid re-rendering the button every keystroke
-  const persistenceIsDirty =
-    persistenceFile && (!persistenceFile.lastSaved || persistenceFile.lastSaved < lastEdit);
-  const persistenceButtons = React.useMemo(() => {
-    return (
-      <ControlBarGoogleDriveButtons
-        isFolderModeEnabled={isFolderModeEnabled}
-        currentFile={persistenceFile}
-        loggedInAs={persistenceUser}
-        isDirty={persistenceIsDirty}
-        key="googledrive"
-        onClickSaveAs={() => dispatch(persistenceSaveFileAs())}
-        onClickOpen={() => dispatch(persistenceOpenPicker())}
-        onClickSave={
-          persistenceFile ? () => dispatch(persistenceSaveFile(persistenceFile)) : undefined
-        }
-        onClickLogOut={() => dispatch(logoutGoogle())}
-        onPopoverOpening={() => dispatch(persistenceInitialise())}
-      />
-    );
-  }, [isFolderModeEnabled, persistenceFile, persistenceUser, persistenceIsDirty, dispatch]);
-
-  const githubOctokitObject = useTypedSelector(store => store.session.githubOctokitObject);
-  const githubSaveInfo = props.githubSaveInfo;
-  const githubPersistenceIsDirty =
-    githubSaveInfo && (!githubSaveInfo.lastSaved || githubSaveInfo.lastSaved < lastEdit);
-  const githubButtons = React.useMemo(() => {
-    return (
-      <ControlBarGitHubButtons
-        key="github"
-        isFolderModeEnabled={isFolderModeEnabled}
-        loggedInAs={githubOctokitObject.octokit}
-        githubSaveInfo={githubSaveInfo}
-        isDirty={githubPersistenceIsDirty}
-        onClickOpen={() => dispatch(githubOpenFile())}
-        onClickSaveAs={() => dispatch(githubSaveFileAs())}
-        onClickSave={() => dispatch(githubSaveFile())}
-        onClickLogIn={() => dispatch(loginGitHub())}
-        onClickLogOut={() => dispatch(logoutGitHub())}
-      />
-    );
-  }, [
-    dispatch,
-    githubOctokitObject.octokit,
-    githubPersistenceIsDirty,
-    githubSaveInfo,
-    isFolderModeEnabled
-  ]);
-
   const executionTime = React.useMemo(
     () => (
       <ControlBarExecutionTime
@@ -627,49 +524,6 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
       />
     ),
     [props.execTime, props.handleChangeExecTime]
-  );
-
-  const stepperStepLimit = React.useMemo(
-    () => (
-      <ControlBarStepLimit
-        stepLimit={props.stepLimit}
-        handleChangeStepLimit={limit => dispatch(changeStepLimit(limit, workspaceLocation))}
-        handleOnBlurAutoScale={limit => {
-          limit % 2 === 0
-            ? dispatch(changeStepLimit(limit, workspaceLocation))
-            : dispatch(changeStepLimit(limit + 1, workspaceLocation));
-        }}
-        key="step_limit"
-      />
-    ),
-    [dispatch, props.stepLimit, workspaceLocation]
-  );
-
-  const getEditorValue = React.useCallback(
-    // TODO: Hardcoded to make use of the first editor tab. Rewrite after editor tabs are added.
-    () => store.getState().workspaces[workspaceLocation].editorTabs[0].value,
-    [store, workspaceLocation]
-  );
-
-  const sessionButtons = React.useMemo(
-    () => (
-      <ControlBarSessionButtons
-        isFolderModeEnabled={isFolderModeEnabled}
-        editorSessionId={props.editorSessionId}
-        getEditorValue={getEditorValue}
-        handleSetEditorSessionId={id => dispatch(setEditorSessionId(workspaceLocation, id))}
-        sharedbConnected={props.sharedbConnected}
-        key="session"
-      />
-    ),
-    [
-      dispatch,
-      getEditorValue,
-      isFolderModeEnabled,
-      props.editorSessionId,
-      props.sharedbConnected,
-      workspaceLocation
-    ]
   );
 
   const shareButton = React.useMemo(() => {
@@ -688,25 +542,6 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
       />
     );
   }, [dispatch, isSicpEditor, props.initialEditorValueHash, props.queryString, props.shortURL]);
-
-  const toggleFolderModeButton = React.useMemo(() => {
-    return (
-      <ControlBarToggleFolderModeButton
-        isFolderModeEnabled={isFolderModeEnabled}
-        isSessionActive={props.editorSessionId !== ''}
-        isPersistenceActive={persistenceFile !== undefined || githubSaveInfo.repoName !== ''}
-        toggleFolderMode={() => dispatch(toggleFolderMode(workspaceLocation))}
-        key="folder"
-      />
-    );
-  }, [
-    dispatch,
-    githubSaveInfo.repoName,
-    isFolderModeEnabled,
-    persistenceFile,
-    props.editorSessionId,
-    workspaceLocation
-  ]);
 
   const playgroundIntroductionTab: SideContentTab = React.useMemo(
     () => ({
@@ -728,79 +563,8 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
 
   const tabs = React.useMemo(() => {
     const tabs: SideContentTab[] = [playgroundIntroductionTab];
-
-    // For HTML Chapter, HTML Display tab is added only after code is run
-    if (props.playgroundSourceChapter === Chapter.HTML) {
-      if (props.output.length > 0 && props.output[0].type === 'result') {
-        tabs.push({
-          label: 'HTML Display',
-          iconName: IconNames.MODAL,
-          body: (
-            <SideContentHtmlDisplay
-              content={(props.output[0] as ResultOutput).value}
-              handleAddHtmlConsoleError={errorMsg =>
-                dispatch(addHtmlConsoleError(errorMsg, workspaceLocation))
-              }
-            />
-          ),
-          id: SideContentType.htmlDisplay
-        });
-      }
-      return tabs;
-    }
-
-    // (TEMP) Remove tabs for fullJS until support is integrated
-    if (
-      props.playgroundSourceChapter === Chapter.FULL_JS ||
-      props.playgroundSourceChapter === Chapter.FULL_TS
-    ) {
-      return [...tabs, dataVisualizerTab];
-    }
-
-    if (props.playgroundSourceChapter >= 2 && !usingRemoteExecution) {
-      // Enable Data Visualizer for Source Chapter 2 and above
-      tabs.push(dataVisualizerTab);
-    }
-    if (
-      props.playgroundSourceChapter >= 3 &&
-      props.playgroundSourceVariant !== Variant.CONCURRENT &&
-      props.playgroundSourceVariant !== Variant.NON_DET &&
-      !usingRemoteExecution
-    ) {
-      // Enable Env Visualizer for Source Chapter 3 and above
-      tabs.push(envVisualizerTab);
-    }
-
-    if (
-      props.playgroundSourceChapter <= 2 &&
-      (props.playgroundSourceVariant === Variant.DEFAULT ||
-        props.playgroundSourceVariant === Variant.NATIVE)
-    ) {
-      // Enable Subst Visualizer only for default Source 1 & 2
-      tabs.push({
-        label: 'Stepper',
-        iconName: IconNames.FLOW_REVIEW,
-        body: <SideContentSubstVisualizer content={processStepperOutput(props.output)} />,
-        id: SideContentType.substVisualizer
-      });
-    }
-
-    if (!isSicpEditor) {
-      tabs.push(remoteExecutionTab);
-    }
-
     return tabs;
-  }, [
-    playgroundIntroductionTab,
-    props.playgroundSourceChapter,
-    props.playgroundSourceVariant,
-    props.output,
-    usingRemoteExecution,
-    isSicpEditor,
-    dispatch,
-    workspaceLocation,
-    remoteExecutionTab
-  ]);
+  }, [playgroundIntroductionTab]);
 
   // Remove Intro and Remote Execution tabs for mobile
   const mobileTabs = [...tabs].filter(({ id }) => !(id && desktopOnlyTabIds.includes(id)));
@@ -999,16 +763,7 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
         autorunButtons,
         props.playgroundSourceChapter === Chapter.FULL_JS ? null : shareButton,
         chapterSelect,
-        isSicpEditor ? null : sessionButtons,
-        // Local imports/exports require Source 2+ as Source 1 does not have lists.
-        props.playgroundSourceChapter === Chapter.SOURCE_1 ? null : toggleFolderModeButton,
-        persistenceButtons,
-        githubButtons,
-        usingRemoteExecution || !isSourceLanguage(props.playgroundSourceChapter)
-          ? null
-          : props.usingSubst
-          ? stepperStepLimit
-          : executionTime
+        executionTime
       ]
     },
     editorContainerProps: editorContainerProps,
@@ -1041,12 +796,7 @@ const Playground: React.FC<PlaygroundProps> = ({ workspaceLocation = 'playground
         editorButtons: [
           autorunButtons,
           chapterSelect,
-          props.playgroundSourceChapter === Chapter.FULL_JS ? null : shareButton,
-          isSicpEditor ? null : sessionButtons,
-          // Local imports/exports require Source 2+ as Source 1 does not have lists.
-          props.playgroundSourceChapter === Chapter.SOURCE_1 ? null : toggleFolderModeButton,
-          persistenceButtons,
-          githubButtons
+          props.playgroundSourceChapter === Chapter.FULL_JS ? null : shareButton
         ]
       },
       selectedTabId: selectedTab,
@@ -1079,19 +829,4 @@ const mobileOnlyTabIds: readonly SideContentType[] = [
   SideContentType.mobileEditorRun
 ];
 const desktopOnlyTabIds: readonly SideContentType[] = [SideContentType.introduction];
-
-const dataVisualizerTab: SideContentTab = {
-  label: 'Data Visualizer',
-  iconName: IconNames.EYE_OPEN,
-  body: <SideContentDataVisualizer />,
-  id: SideContentType.dataVisualizer
-};
-
-const envVisualizerTab: SideContentTab = {
-  label: 'Env Visualizer',
-  iconName: IconNames.GLOBE,
-  body: <SideContentEnvVisualizer />,
-  id: SideContentType.envVisualizer
-};
-
 export default Playground;

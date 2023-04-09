@@ -2,6 +2,7 @@
 import { Ace, require as acequire } from 'ace-builds';
 import 'ace-builds/src-noconflict/ext-language_tools';
 import 'ace-builds/src-noconflict/ext-searchbox';
+import 'ace-builds/src-noconflict/mode-c_cpp';
 import 'js-slang/dist/editors/ace/theme/source';
 
 import { Chapter, Variant } from 'js-slang/dist/types';
@@ -21,9 +22,9 @@ import useNavigation from './UseNavigation';
 import useRefactor from './UseRefactor';
 import useShareAce from './UseShareAce';
 import useTypeInference from './UseTypeInference';
-import { getModeString, selectMode } from '../utils/AceHelper';
 import { EditorBinding, WorkspaceSettingsContext } from '../WorkspaceSettingsContext';
 import { IAceEditor } from 'react-ace/lib/types';
+import { getModeString, selectMode } from '../utils/AceHelper';
 
 export type EditorKeyBindingHandlers = { [name in KeyFunction]?: () => void };
 export type EditorHook = (

@@ -35,5 +35,5 @@ export const getModeString = (chapter: Chapter, variant: Variant, library: strin
   if (chapter === Chapter.HTML) {
     return 'html';
   }
-  return `source${chapter}${variant}${library}`;
+  return 'c_cpp';
 };

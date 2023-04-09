@@ -163,11 +163,11 @@ exports[`AssessmentWorkspace page with ContestVoting question renders correctly 
                                 <Blueprint4.ResizeSensor onResize={[Function (anonymous)]}>
                                   <span onClick={[Function (anonymous)]} aria-haspopup=\\"true\\" className=\\"bp4-popover-target\\">
                                     <div onKeyDown={[Function (anonymous)]} onKeyUp={[undefined]} className=\\"\\" disabled={[undefined]} tabIndex={[undefined]}>
-                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"Source §1\\" rightIcon={{...}} disabled={true}>
+                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"C\\" rightIcon={{...}} disabled={true}>
                                         <button type=\\"button\\" className=\\"bp4-button bp4-disabled bp4-minimal\\" disabled={true} onBlur={[Function (anonymous)]} onClick={[undefined]} onFocus={[undefined]} onKeyDown={[Function (anonymous)]} onKeyUp={[Function (anonymous)]} tabIndex={-1}>
                                           <Blueprint4.Icon icon={[undefined]} />
                                           <span className=\\"bp4-button-text\\">
-                                            Source §1
+                                            C
                                           </span>
                                           <Blueprint4.Icon icon={{...}} />
                                         </button>
@@ -753,7 +753,7 @@ exports[`AssessmentWorkspace page with ContestVoting question renders correctly 
                         <HotKeysWrapper hotKeys={{...}} className=\\"repl-input-parent row bp4-card bp4-elevation-0\\">
                           <div onFocus={[Function: bound _handleFocus]} onBlur={[Function: bound _handleBlur]} tabIndex=\\"-1\\" className=\\"repl-input-parent row bp4-card bp4-elevation-0\\">
                             <ReplInput handleBrowseHistoryDown={[Function: handleBrowseHistoryDown]} handleBrowseHistoryUp={[Function: handleBrowseHistoryUp]} handleReplEval={[Function: handleReplEval]} handleReplValueChange={[Function: handleReplValueChange]} output={{...}} replValue=\\"\\" sourceChapter={1} sourceVariant=\\"default\\" externalLibrary=\\"NONE\\" replButtons={{...}}>
-                              <ReactAce className=\\"repl-react-ace react-ace\\" mode=\\"source1defaultNONE\\" theme=\\"source\\" height=\\"1px\\" width=\\"100%\\" value=\\"\\" onChange={[Function: handleReplValueChange]} commands={{...}} minLines={1} maxLines={20} fontSize={17} highlightActiveLine={false} showGutter={false} showPrintMargin={false} setOptions={{...}} name=\\"ace-editor\\" focus={false} enableSnippets={false} onPaste={{...}} onLoad={{...}} onScroll={{...}} readOnly={false} tabSize={4} cursorStart={1} editorProps={{...}} style={{...}} scrollMargin={{...}} wrapEnabled={false} enableBasicAutocompletion={false} enableLiveAutocompletion={false} placeholder={{...}} navigateToFileEnd={true}>
+                              <ReactAce className=\\"repl-react-ace react-ace\\" mode=\\"c_cpp\\" theme=\\"source\\" height=\\"1px\\" width=\\"100%\\" value=\\"\\" onChange={[Function: handleReplValueChange]} commands={{...}} minLines={1} maxLines={20} fontSize={17} highlightActiveLine={false} showGutter={false} showPrintMargin={false} setOptions={{...}} name=\\"ace-editor\\" focus={false} enableSnippets={false} onPaste={{...}} onLoad={{...}} onScroll={{...}} readOnly={false} tabSize={4} cursorStart={1} editorProps={{...}} style={{...}} scrollMargin={{...}} wrapEnabled={false} enableBasicAutocompletion={false} enableLiveAutocompletion={false} placeholder={{...}} navigateToFileEnd={true}>
                                 <div id=\\"ace-editor\\" style={{...}} />
                               </ReactAce>
                               <div className=\\"bp4-button-group bp4-dark\\">
@@ -899,11 +899,11 @@ exports[`AssessmentWorkspace page with MCQ question renders correctly 1`] = `
                                 <Blueprint4.ResizeSensor onResize={[Function (anonymous)]}>
                                   <span onClick={[Function (anonymous)]} aria-haspopup=\\"true\\" className=\\"bp4-popover-target\\">
                                     <div onKeyDown={[Function (anonymous)]} onKeyUp={[undefined]} className=\\"\\" disabled={[undefined]} tabIndex={[undefined]}>
-                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"Source §1\\" rightIcon={{...}} disabled={true}>
+                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"C\\" rightIcon={{...}} disabled={true}>
                                         <button type=\\"button\\" className=\\"bp4-button bp4-disabled bp4-minimal\\" disabled={true} onBlur={[Function (anonymous)]} onClick={[undefined]} onFocus={[undefined]} onKeyDown={[Function (anonymous)]} onKeyUp={[Function (anonymous)]} tabIndex={-1}>
                                           <Blueprint4.Icon icon={[undefined]} />
                                           <span className=\\"bp4-button-text\\">
-                                            Source §1
+                                            C
                                           </span>
                                           <Blueprint4.Icon icon={{...}} />
                                         </button>
@@ -1284,7 +1284,7 @@ exports[`AssessmentWorkspace page with MCQ question renders correctly 1`] = `
                         <HotKeysWrapper hotKeys={{...}} className=\\"repl-input-parent row bp4-card bp4-elevation-0\\">
                           <div onFocus={[Function: bound _handleFocus]} onBlur={[Function: bound _handleBlur]} tabIndex=\\"-1\\" className=\\"repl-input-parent row bp4-card bp4-elevation-0\\">
                             <ReplInput handleBrowseHistoryDown={[Function: handleBrowseHistoryDown]} handleBrowseHistoryUp={[Function: handleBrowseHistoryUp]} handleReplEval={[Function: handleReplEval]} handleReplValueChange={[Function: handleReplValueChange]} output={{...}} replValue=\\"\\" sourceChapter={1} sourceVariant=\\"default\\" externalLibrary=\\"NONE\\" replButtons={{...}}>
-                              <ReactAce className=\\"repl-react-ace react-ace\\" mode=\\"source1defaultNONE\\" theme=\\"source\\" height=\\"1px\\" width=\\"100%\\" value=\\"\\" onChange={[Function: handleReplValueChange]} commands={{...}} minLines={1} maxLines={20} fontSize={17} highlightActiveLine={false} showGutter={false} showPrintMargin={false} setOptions={{...}} name=\\"ace-editor\\" focus={false} enableSnippets={false} onPaste={{...}} onLoad={{...}} onScroll={{...}} readOnly={false} tabSize={4} cursorStart={1} editorProps={{...}} style={{...}} scrollMargin={{...}} wrapEnabled={false} enableBasicAutocompletion={false} enableLiveAutocompletion={false} placeholder={{...}} navigateToFileEnd={true}>
+                              <ReactAce className=\\"repl-react-ace react-ace\\" mode=\\"c_cpp\\" theme=\\"source\\" height=\\"1px\\" width=\\"100%\\" value=\\"\\" onChange={[Function: handleReplValueChange]} commands={{...}} minLines={1} maxLines={20} fontSize={17} highlightActiveLine={false} showGutter={false} showPrintMargin={false} setOptions={{...}} name=\\"ace-editor\\" focus={false} enableSnippets={false} onPaste={{...}} onLoad={{...}} onScroll={{...}} readOnly={false} tabSize={4} cursorStart={1} editorProps={{...}} style={{...}} scrollMargin={{...}} wrapEnabled={false} enableBasicAutocompletion={false} enableLiveAutocompletion={false} placeholder={{...}} navigateToFileEnd={true}>
                                 <div id=\\"ace-editor\\" style={{...}} />
                               </ReactAce>
                               <div className=\\"bp4-button-group bp4-dark\\">
@@ -1499,11 +1499,11 @@ exports[`AssessmentWorkspace page with overdue assessment renders correctly 1`] 
                                 <Blueprint4.ResizeSensor onResize={[Function (anonymous)]}>
                                   <span onClick={[Function (anonymous)]} aria-haspopup=\\"true\\" className=\\"bp4-popover-target\\">
                                     <div onKeyDown={[Function (anonymous)]} onKeyUp={[undefined]} className=\\"\\" disabled={[undefined]} tabIndex={[undefined]}>
-                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"Source §1\\" rightIcon={{...}} disabled={true}>
+                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"C\\" rightIcon={{...}} disabled={true}>
                                         <button type=\\"button\\" className=\\"bp4-button bp4-disabled bp4-minimal\\" disabled={true} onBlur={[Function (anonymous)]} onClick={[undefined]} onFocus={[undefined]} onKeyDown={[Function (anonymous)]} onKeyUp={[Function (anonymous)]} tabIndex={-1}>
                                           <Blueprint4.Icon icon={[undefined]} />
                                           <span className=\\"bp4-button-text\\">
-                                            Source §1
+                                            C
                                           </span>
                                           <Blueprint4.Icon icon={{...}} />
                                         </button>
@@ -1819,7 +1819,7 @@ exports[`AssessmentWorkspace page with overdue assessment renders correctly 1`] 
                         <HotKeysWrapper hotKeys={{...}} className=\\"repl-input-parent row bp4-card bp4-elevation-0\\">
                           <div onFocus={[Function: bound _handleFocus]} onBlur={[Function: bound _handleBlur]} tabIndex=\\"-1\\" className=\\"repl-input-parent row bp4-card bp4-elevation-0\\">
                             <ReplInput handleBrowseHistoryDown={[Function: handleBrowseHistoryDown]} handleBrowseHistoryUp={[Function: handleBrowseHistoryUp]} handleReplEval={[Function: handleReplEval]} handleReplValueChange={[Function: handleReplValueChange]} output={{...}} replValue=\\"\\" sourceChapter={1} sourceVariant=\\"default\\" externalLibrary=\\"NONE\\" replButtons={{...}}>
-                              <ReactAce className=\\"repl-react-ace react-ace\\" mode=\\"source1defaultNONE\\" theme=\\"source\\" height=\\"1px\\" width=\\"100%\\" value=\\"\\" onChange={[Function: handleReplValueChange]} commands={{...}} minLines={1} maxLines={20} fontSize={17} highlightActiveLine={false} showGutter={false} showPrintMargin={false} setOptions={{...}} name=\\"ace-editor\\" focus={false} enableSnippets={false} onPaste={{...}} onLoad={{...}} onScroll={{...}} readOnly={false} tabSize={4} cursorStart={1} editorProps={{...}} style={{...}} scrollMargin={{...}} wrapEnabled={false} enableBasicAutocompletion={false} enableLiveAutocompletion={false} placeholder={{...}} navigateToFileEnd={true}>
+                              <ReactAce className=\\"repl-react-ace react-ace\\" mode=\\"c_cpp\\" theme=\\"source\\" height=\\"1px\\" width=\\"100%\\" value=\\"\\" onChange={[Function: handleReplValueChange]} commands={{...}} minLines={1} maxLines={20} fontSize={17} highlightActiveLine={false} showGutter={false} showPrintMargin={false} setOptions={{...}} name=\\"ace-editor\\" focus={false} enableSnippets={false} onPaste={{...}} onLoad={{...}} onScroll={{...}} readOnly={false} tabSize={4} cursorStart={1} editorProps={{...}} style={{...}} scrollMargin={{...}} wrapEnabled={false} enableBasicAutocompletion={false} enableLiveAutocompletion={false} placeholder={{...}} navigateToFileEnd={true}>
                                 <div id=\\"ace-editor\\" style={{...}} />
                               </ReactAce>
                               <div className=\\"bp4-button-group bp4-dark\\">
@@ -2055,11 +2055,11 @@ exports[`AssessmentWorkspace page with programming question renders correctly 1`
                                 <Blueprint4.ResizeSensor onResize={[Function (anonymous)]}>
                                   <span onClick={[Function (anonymous)]} aria-haspopup=\\"true\\" className=\\"bp4-popover-target\\">
                                     <div onKeyDown={[Function (anonymous)]} onKeyUp={[undefined]} className=\\"\\" disabled={[undefined]} tabIndex={[undefined]}>
-                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"Source §1\\" rightIcon={{...}} disabled={true}>
+                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"C\\" rightIcon={{...}} disabled={true}>
                                         <button type=\\"button\\" className=\\"bp4-button bp4-disabled bp4-minimal\\" disabled={true} onBlur={[Function (anonymous)]} onClick={[undefined]} onFocus={[undefined]} onKeyDown={[Function (anonymous)]} onKeyUp={[Function (anonymous)]} tabIndex={-1}>
                                           <Blueprint4.Icon icon={[undefined]} />
                                           <span className=\\"bp4-button-text\\">
-                                            Source §1
+                                            C
                                           </span>
                                           <Blueprint4.Icon icon={{...}} />
                                         </button>
@@ -2375,7 +2375,7 @@ exports[`AssessmentWorkspace page with programming question renders correctly 1`
                         <HotKeysWrapper hotKeys={{...}} className=\\"repl-input-parent row bp4-card bp4-elevation-0\\">
                           <div onFocus={[Function: bound _handleFocus]} onBlur={[Function: bound _handleBlur]} tabIndex=\\"-1\\" className=\\"repl-input-parent row bp4-card bp4-elevation-0\\">
                             <ReplInput handleBrowseHistoryDown={[Function: handleBrowseHistoryDown]} handleBrowseHistoryUp={[Function: handleBrowseHistoryUp]} handleReplEval={[Function: handleReplEval]} handleReplValueChange={[Function: handleReplValueChange]} output={{...}} replValue=\\"\\" sourceChapter={1} sourceVariant=\\"default\\" externalLibrary=\\"NONE\\" replButtons={{...}}>
-                              <ReactAce className=\\"repl-react-ace react-ace\\" mode=\\"source1defaultNONE\\" theme=\\"source\\" height=\\"1px\\" width=\\"100%\\" value=\\"\\" onChange={[Function: handleReplValueChange]} commands={{...}} minLines={1} maxLines={20} fontSize={17} highlightActiveLine={false} showGutter={false} showPrintMargin={false} setOptions={{...}} name=\\"ace-editor\\" focus={false} enableSnippets={false} onPaste={{...}} onLoad={{...}} onScroll={{...}} readOnly={false} tabSize={4} cursorStart={1} editorProps={{...}} style={{...}} scrollMargin={{...}} wrapEnabled={false} enableBasicAutocompletion={false} enableLiveAutocompletion={false} placeholder={{...}} navigateToFileEnd={true}>
+                              <ReactAce className=\\"repl-react-ace react-ace\\" mode=\\"c_cpp\\" theme=\\"source\\" height=\\"1px\\" width=\\"100%\\" value=\\"\\" onChange={[Function: handleReplValueChange]} commands={{...}} minLines={1} maxLines={20} fontSize={17} highlightActiveLine={false} showGutter={false} showPrintMargin={false} setOptions={{...}} name=\\"ace-editor\\" focus={false} enableSnippets={false} onPaste={{...}} onLoad={{...}} onScroll={{...}} readOnly={false} tabSize={4} cursorStart={1} editorProps={{...}} style={{...}} scrollMargin={{...}} wrapEnabled={false} enableBasicAutocompletion={false} enableLiveAutocompletion={false} placeholder={{...}} navigateToFileEnd={true}>
                                 <div id=\\"ace-editor\\" style={{...}} />
                               </ReactAce>
                               <div className=\\"bp4-button-group bp4-dark\\">
@@ -2611,11 +2611,11 @@ exports[`AssessmentWorkspace renders Grading tab correctly if the question has b
                                 <Blueprint4.ResizeSensor onResize={[Function (anonymous)]}>
                                   <span onClick={[Function (anonymous)]} aria-haspopup=\\"true\\" className=\\"bp4-popover-target\\">
                                     <div onKeyDown={[Function (anonymous)]} onKeyUp={[undefined]} className=\\"\\" disabled={[undefined]} tabIndex={[undefined]}>
-                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"Source §1\\" rightIcon={{...}} disabled={true}>
+                                      <Blueprint4.Button className=\\"bp4-minimal\\" text=\\"C\\" rightIcon={{...}} disabled={true}>
                                         <button type=\\"button\\" className=\\"bp4-button bp4-disabled bp4-minimal\\" disabled={true} onBlur={[Function (anonymous)]} onClick={[undefined]} onFocus={[undefined]} onKeyDown={[Function (anonymous)]} onKeyUp={[Function (anonymous)]} tabIndex={-1}>
                                           <Blueprint4.Icon icon={[undefined]} />
                                           <span className=\\"bp4-button-text\\">
-                                            Source §1
+                                            C
                                           </span>
                                           <Blueprint4.Icon icon={{...}} />
                                         </button>
@@ -3029,7 +3029,7 @@ exports[`AssessmentWorkspace renders Grading tab correctly if the question has b
                         <HotKeysWrapper hotKeys={{...}} className=\\"repl-input-parent row bp4-card bp4-elevation-0\\">
                           <div onFocus={[Function: bound _handleFocus]} onBlur={[Function: bound _handleBlur]} tabIndex=\\"-1\\" className=\\"repl-input-parent row bp4-card bp4-elevation-0\\">
                             <ReplInput handleBrowseHistoryDown={[Function: handleBrowseHistoryDown]} handleBrowseHistoryUp={[Function: handleBrowseHistoryUp]} handleReplEval={[Function: handleReplEval]} handleReplValueChange={[Function: handleReplValueChange]} output={{...}} replValue=\\"\\" sourceChapter={1} sourceVariant=\\"default\\" externalLibrary=\\"NONE\\" replButtons={{...}}>
-                              <ReactAce className=\\"repl-react-ace react-ace\\" mode=\\"source1defaultNONE\\" theme=\\"source\\" height=\\"1px\\" width=\\"100%\\" value=\\"\\" onChange={[Function: handleReplValueChange]} commands={{...}} minLines={1} maxLines={20} fontSize={17} highlightActiveLine={false} showGutter={false} showPrintMargin={false} setOptions={{...}} name=\\"ace-editor\\" focus={false} enableSnippets={false} onPaste={{...}} onLoad={{...}} onScroll={{...}} readOnly={false} tabSize={4} cursorStart={1} editorProps={{...}} style={{...}} scrollMargin={{...}} wrapEnabled={false} enableBasicAutocompletion={false} enableLiveAutocompletion={false} placeholder={{...}} navigateToFileEnd={true}>
+                              <ReactAce className=\\"repl-react-ace react-ace\\" mode=\\"c_cpp\\" theme=\\"source\\" height=\\"1px\\" width=\\"100%\\" value=\\"\\" onChange={[Function: handleReplValueChange]} commands={{...}} minLines={1} maxLines={20} fontSize={17} highlightActiveLine={false} showGutter={false} showPrintMargin={false} setOptions={{...}} name=\\"ace-editor\\" focus={false} enableSnippets={false} onPaste={{...}} onLoad={{...}} onScroll={{...}} readOnly={false} tabSize={4} cursorStart={1} editorProps={{...}} style={{...}} scrollMargin={{...}} wrapEnabled={false} enableBasicAutocompletion={false} enableLiveAutocompletion={false} placeholder={{...}} navigateToFileEnd={true}>
                                 <div id=\\"ace-editor\\" style={{...}} />
                               </ReactAce>
                               <div className=\\"bp4-button-group bp4-dark\\">

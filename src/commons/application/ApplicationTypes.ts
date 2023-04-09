@@ -1,4 +1,4 @@
-import { Chapter, Language, SourceError, Variant } from 'js-slang/dist/types';
+import { Chapter, Language, Variant } from 'js-slang/dist/types';
 
 import { AcademyState } from '../../features/academy/AcademyTypes';
 import { AchievementState } from '../../features/achievement/AchievementTypes';
@@ -85,7 +85,7 @@ export type ResultOutput = {
  */
 export type ErrorOutput = {
   type: 'errors';
-  errors: SourceError[];
+  error: Error;
   consoleLogs: string[];
 };
 
@@ -112,17 +112,6 @@ export interface SALanguage extends Language {
   displayName: string;
 }
 
-const variantDisplay: Map<Variant, string> = new Map([
-  [Variant.TYPED, 'Typed'],
-  [Variant.WASM, 'WebAssembly'],
-  [Variant.NON_DET, 'Non-Det'],
-  [Variant.CONCURRENT, 'Concurrent'],
-  [Variant.LAZY, 'Lazy'],
-  [Variant.GPU, 'GPU'],
-  [Variant.NATIVE, 'Native'],
-  [Variant.EXPLICIT_CONTROL, 'Explicit-Control']
-]);
-
 export const fullJSLanguage: SALanguage = {
   chapter: Chapter.FULL_JS,
   variant: Variant.DEFAULT,
@@ -142,41 +131,11 @@ export const htmlLanguage: SALanguage = {
 };
 
 export const styliseSublanguage = (chapter: Chapter, variant: Variant = Variant.DEFAULT) => {
-  switch (chapter) {
-    case Chapter.FULL_JS:
-      return fullJSLanguage.displayName;
-    case Chapter.FULL_TS:
-      return fullTSLanguage.displayName;
-    case Chapter.HTML:
-      return htmlLanguage.displayName;
-    default:
-      return `Source \xa7${chapter}${
-        variantDisplay.has(variant) ? ` ${variantDisplay.get(variant)}` : ''
-      }`;
-  }
+  // Source is too ingrained into the frontend, so we perform this hack instead.
+  return 'C';
 };
 
-export const sublanguages: Language[] = [
-  { chapter: Chapter.SOURCE_1, variant: Variant.DEFAULT },
-  { chapter: Chapter.SOURCE_1, variant: Variant.TYPED },
-  { chapter: Chapter.SOURCE_1, variant: Variant.WASM },
-  { chapter: Chapter.SOURCE_1, variant: Variant.LAZY },
-  { chapter: Chapter.SOURCE_1, variant: Variant.NATIVE },
-  { chapter: Chapter.SOURCE_2, variant: Variant.DEFAULT },
-  { chapter: Chapter.SOURCE_2, variant: Variant.TYPED },
-  { chapter: Chapter.SOURCE_2, variant: Variant.LAZY },
-  { chapter: Chapter.SOURCE_2, variant: Variant.NATIVE },
-  { chapter: Chapter.SOURCE_3, variant: Variant.DEFAULT },
-  { chapter: Chapter.SOURCE_3, variant: Variant.TYPED },
-  { chapter: Chapter.SOURCE_3, variant: Variant.CONCURRENT },
-  { chapter: Chapter.SOURCE_3, variant: Variant.NON_DET },
-  { chapter: Chapter.SOURCE_3, variant: Variant.NATIVE },
-  { chapter: Chapter.SOURCE_4, variant: Variant.DEFAULT },
-  { chapter: Chapter.SOURCE_4, variant: Variant.TYPED },
-  { chapter: Chapter.SOURCE_4, variant: Variant.GPU },
-  { chapter: Chapter.SOURCE_4, variant: Variant.NATIVE },
-  { chapter: Chapter.SOURCE_4, variant: Variant.EXPLICIT_CONTROL }
-];
+export const sublanguages: Language[] = [{ chapter: Chapter.SOURCE_1, variant: Variant.DEFAULT }];
 
 export const sourceLanguages: SALanguage[] = sublanguages.map(sublang => {
   return {

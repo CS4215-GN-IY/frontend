@@ -6,8 +6,11 @@ import { Links } from './Constants';
 const MAIN_INTRODUCTION = `
 Welcome to the Source Academy playground!
 
-The book [_Structure and Interpretation of Computer Programs, JavaScript Edition_](${Links.textbook})
-uses JavaScript sublanguages that we call [_Source_](${Links.sourceDocs}). `;
+This is a stripped down version of the Source Academy for the purpose of demonstrating an implementation
+of a subset of the _C_ programming language. Made by [Geng Ning](https://github.com/zognin) &
+[Ian](https://github.com/ianyong) for CS4215 Programming Language Implementation in AY2022/23 Semester 2.
+
+`;
 
 const HOTKEYS_INTRODUCTION = `
 
@@ -41,15 +44,10 @@ const generateSourceDocsLink = (sourceChapter: Chapter, sourceVariant: Variant) 
   ) {
     return 'You have chosen an invalid sublanguage. Please pick a sublanguage from the dropdown instead.';
   }
-
-  const sourceDocsLink: string = `${Links.sourceDocs}source_${sourceChapter}${
-    sourceVariant !== Variant.DEFAULT && sourceVariant !== Variant.NATIVE ? `_${sourceVariant}` : ''
-  }/`;
-
-  return `You have chosen the sublanguage [_${styliseSublanguage(
+  return `You have chosen the sublanguage _${styliseSublanguage(
     sourceChapter,
     sourceVariant
-  )}_](${sourceDocsLink}).`;
+  )}_ (although you never really had a choice).`;
 };
 
 const generateIntroductionText = (sourceChapter: Chapter, sourceVariant: Variant) => {
