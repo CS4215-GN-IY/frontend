@@ -552,7 +552,13 @@ export function* evalCode(
 ): SagaIterator {
   try {
     const result = yield call(run, code);
-    yield put(notifyProgramEvaluated(result, code, workspaceLocation));
+
+    // Set debug output to be logged.
+    result.type = 'result';
+    result.consoleLogs = result.debugOutput;
+    delete result.debugOutput;
+
+    yield put(notifyProgramEvaluated(result.value, code, workspaceLocation));
     if (actionType !== EVAL_SILENT) {
       yield put(actions.evalInterpreterSuccess(result, workspaceLocation));
     }
