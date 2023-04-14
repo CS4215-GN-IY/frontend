@@ -544,15 +544,60 @@ export function* restoreExtraMethods(
   yield call(evalCode, restorer, execTime, workspaceLocation, EVAL_SILENT);
 }
 
+function* insertDebuggerStatements(
+  workspaceLocation: WorkspaceLocation,
+  code: string,
+  breakpoints: string[]
+): Generator<StrictEffect, string | null, any> {
+  // Otherwise, we step through the breakpoints one by one & try to insert
+  // corresponding debugger statements.
+  const lines = code.split('\n');
+  let transformedCode = code;
+  for (const breakpoint in breakpoints) {
+    // Add a debugger statement to the line with the breakpoint.
+    const breakpointLineNum: number = parseInt(breakpoint);
+    lines[breakpointLineNum] = '__dump_memory__();' + lines[breakpointLineNum];
+    // Reconstruct the code & check that the code is still syntactically valid.
+    // The insertion of the debugger statement is potentially invalid if it
+    // happens within an existing statement (that is split across lines).
+    transformedCode = lines.join('\n');
+    try {
+      yield call(run, transformedCode);
+    } catch (err) {
+      // If the resulting code is no longer syntactically valid, throw an error.
+      const errorMessage = `Hint: Misplaced breakpoint at line ${breakpointLineNum + 1}.`;
+      yield put(actions.sendReplInputToOutput(errorMessage, workspaceLocation));
+      yield put(actions.evalInterpreterError(err, workspaceLocation));
+      return null;
+    }
+  }
+
+  // Finally, return the transformed code with debugger statements added.
+  return transformedCode;
+}
+
 export function* evalCode(
   code: string,
   execTime: number,
   workspaceLocation: WorkspaceLocation,
   actionType: string
 ): SagaIterator {
+  const breakpoints: string[] = yield select(
+    (state: OverallState) => state.workspaces[workspaceLocation].editorTabs[0].breakpoints
+  );
+  const transformedCode = yield* insertDebuggerStatements('playground', code, breakpoints);
+  if (transformedCode === null) {
+    return;
+  }
   try {
-    const result = yield call(run, code);
-    yield put(notifyProgramEvaluated(result, code, workspaceLocation));
+    const result = yield call(run, transformedCode);
+
+    // Set debug output to be logged.
+    result.type = 'result';
+    result.consoleLogs = result.debugOutput;
+    delete result.debugOutput;
+
+    yield put(notifyProgramEvaluated(result.value, code, workspaceLocation));
     if (actionType !== EVAL_SILENT) {
       yield put(actions.evalInterpreterSuccess(result, workspaceLocation));
     }

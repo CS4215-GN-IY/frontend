@@ -368,7 +368,7 @@ export const WorkspaceReducer: Reducer<WorkspaceManagerState> = (
         ...state,
         [workspaceLocation]: {
           ...state[workspaceLocation],
-          output: newOutput,
+          output: [action.payload.value],
           isRunning: false
         }
       };
