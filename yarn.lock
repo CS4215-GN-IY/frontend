@@ -3998,7 +3998,7 @@ bytes@3.1.2:
 
 "c-slang@https://github.com/CS4215-GN-IY/c-slang":
   version "0.0.0"
-  resolved "https://github.com/CS4215-GN-IY/c-slang#eb5deb1ba0329b04af24aecdfa18ea29993a1d27"
+  resolved "https://github.com/CS4215-GN-IY/c-slang#56149f99f510e6e86cef90cfe8011d4979d158e2"
   dependencies:
     antlr4ts "^0.5.0-alpha.4"
 
