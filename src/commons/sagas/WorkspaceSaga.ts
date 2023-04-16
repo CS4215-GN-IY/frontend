@@ -553,10 +553,17 @@ function* insertDebuggerStatements(
   // corresponding debugger statements.
   const lines = code.split('\n');
   let transformedCode = code;
-  for (const breakpoint in breakpoints) {
+  // Retrieve all breakpoint line numbers
+  const breakpointLineNumbers: number[] = [];
+  breakpoints.forEach((value, index) => {
+    if (value !== 'ace_breakpoint') {
+      return;
+    }
+    breakpointLineNumbers.push(index);
+  });
+  for (const breakpointLineNumber of breakpointLineNumbers) {
     // Add a debugger statement to the line with the breakpoint.
-    const breakpointLineNum: number = parseInt(breakpoint);
-    lines[breakpointLineNum] = '__dump_memory__();' + lines[breakpointLineNum];
+    lines[breakpointLineNumber] = '__dump_memory__();' + lines[breakpointLineNumber];
     // Reconstruct the code & check that the code is still syntactically valid.
     // The insertion of the debugger statement is potentially invalid if it
     // happens within an existing statement (that is split across lines).
@@ -565,7 +572,7 @@ function* insertDebuggerStatements(
       yield call(run, transformedCode);
     } catch (err) {
       // If the resulting code is no longer syntactically valid, throw an error.
-      const errorMessage = `Hint: Misplaced breakpoint at line ${breakpointLineNum + 1}.`;
+      const errorMessage = `Hint: Misplaced breakpoint at line ${breakpointLineNumber + 1}.`;
       yield put(actions.sendReplInputToOutput(errorMessage, workspaceLocation));
       yield put(actions.evalInterpreterError(err, workspaceLocation));
       return null;
